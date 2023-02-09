@@ -7,6 +7,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkingScheduleController;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -40,12 +41,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('set_company/{company_id}', function ($companyId) {
         Session::put('company_id', $companyId);
         return redirect()->to('dashboard');
-    });
+    })->name('set.company');
     Route::get('/choose_company',function (){
         if (Session::has('company_id')){
             return redirect()->to('dashboard');
         }
-        return view('pages.choose_company');
+        $companies = Company::all();
+        return view('pages.choose_company',compact('companies'));
     });
     Route::middleware(['auth','company'])->group(function () {
         Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');

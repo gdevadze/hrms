@@ -36,10 +36,7 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/lasuridze', function (){
-    $users = User::all(['name','card_number']);
-    return jsonResponse($users,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
-});
+
 
 Auth::routes();
 Route::middleware(['auth'])->group(function () {

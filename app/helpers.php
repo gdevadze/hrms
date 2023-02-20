@@ -4,7 +4,7 @@ define('TRANSL_FROM_LATIN', 1);
 define('TRANSL_TO_LATIN', 2);
 
 if (!function_exists('jsonResponse')) {
-    function jsonResponse($data = [], int $status = 200,$headers = [],$options)
+    function jsonResponse($data = [], int $status = 200,$headers = [],$options = JSON_UNESCAPED_UNICODE)
     {
         return response()->json($data, $status,$headers,$options);
     }

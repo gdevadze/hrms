@@ -25,23 +25,26 @@ Route::post('/users', function (){
     return jsonResponse($users,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
 });
 
+Route::get('date', function (Request $request){
+    $movement = \App\Models\Movement::latest()->first();
+    return jsonResponse(['status' => 0,'date' => $movement->start_date]);
+});
+
 Route::post('/logs', function (Request $request){
     $data = $request->all();
-//    info($data);
     foreach ($data as $json){
         $user = User::where('card_number',$json['card_id'])->latest()->first();
         $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
-        $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+        $endDate = null;
+        if ($json['end_date']){
+            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+        }
 
-//        $movement = \App\Models\Movement::whereDate('start_date',$date)->first();
-//
         \App\Models\Movement::where('start_date',$startDate)->updateOrCreate([
             'user_id' => $user->id,
             'card_number' => $json['card_id'],
             'start_date' => $startDate,
-
         ],['end_date' => $endDate]);
-//        info($json['date']);
     }
     return jsonResponse($data,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
 });

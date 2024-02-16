@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -83,14 +84,25 @@ class ReportController extends Controller
         if (!$request->company_id){
             return \jsonResponse(['status' => 2,'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
         }
-        $month_days = cal_days_in_month(CAL_GREGORIAN, 1, 2024);
-
+        $year = date('Y');
+        $month = date('m');
+        if($request->selected_date){
+            $year = explode('.',$request->selected_date)[1];
+            $month = explode('.',$request->selected_date)[0];
+            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
+        }
+        $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
-            ?->map?->getWorkedHoursByDay('2024', '1');
-//        return $users;
+            ?->map?->getWorkedHoursByDay($year, $month);
         $company = Company::findOrFail($request->company_id);
         $date = Carbon::today()->format('d.m.Y');
         return jsonResponse(['html' => view('general.reports.hr_table', compact('month_days','users','company','date'))->render(), 'status' => 0]);
+    }
+
+    public function exportHrTable($id,$selectedDate)
+    {
+        $company = Company::findOrFail($id);
+        return Excel::download(new \App\Exports\TabelExport($id,$selectedDate), $company->title.' - ' . date('d.m.Y') . '.xlsx');
     }
 
     public function workedHours(): View

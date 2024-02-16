@@ -92,7 +92,7 @@ class UserCompany extends Model
 
                     $workedHours = (int)($workedSeconds / 3600);
                     $honorableReasonService = new HonorableReasonService();
-                    $vacation = $honorableReasonService->checkVacationStatus($this->id,$date);
+                    $vacation = $honorableReasonService->checkVacationStatus($this->user_id,$date);
                     $holidays = Holiday::where('date',Carbon::parse($date)->format('Y-m-d'))->first();
                     if($vacation || $holidays){
 

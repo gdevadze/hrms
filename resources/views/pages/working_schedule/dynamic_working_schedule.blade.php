@@ -56,7 +56,6 @@
                                     </select>
                                 </div>
                             </div>
-
                         </div>
                         <div class="htmlDisplay"></div>
                     </div>

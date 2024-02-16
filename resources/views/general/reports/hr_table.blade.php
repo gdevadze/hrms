@@ -1,3 +1,4 @@
+<button type="button" class="btn btn-soft-secondary waves-effect waves-light mb-3" onclick="exportExcel()">Excel</button>
 <table cellspacing="0" border="0">
     <colgroup width="221"></colgroup>
     <colgroup width="210"></colgroup>

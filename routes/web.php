@@ -184,6 +184,7 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => 'hr_table','as' => 'hr_table.'], function (){
                 Route::get('/',[ReportController::class,'hrTable'])->name('index');
                 Route::post('/ajax',[ReportController::class,'hrTableAjax'])->name('ajax');
+                Route::get('/export_excel/{id}/{selectedDate}',[ReportController::class,'exportHrTable'])->name('export.excel');
             });
 
             Route::group(['prefix' => 'worked_hours','as' => 'worked.hours.'], function (){

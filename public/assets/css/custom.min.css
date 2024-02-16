@@ -1,0 +1,11 @@
+@font-face {
+    font-family: 'FiraGO';
+    font-style: normal;
+    font-weight: 400;
+    src: url(../fonts/FiraGO-Regular.ttf) format('woff');
+}
+
+label,p,a,span,h4 {
+    font-family: "FiraGO", sans-serif !important;
+}
+/*# sourceMappingURL=custom.min.css.map */

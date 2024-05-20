@@ -127,10 +127,10 @@
                 },
                 columns: [
                     {data: 'id', name: 'id'},
-                    {data: 'user_full_name', name: 'full_name'},
-                    {data: 'formatted_start_date', name: 'tel'},
-                    {data: 'formatted_end_date', name: 'email'},
-                    {data: 'formatted_late', name: 'formatted_late'},
+                    {data: 'user_full_name', name: 'user.name_ka'},
+                    {data: 'formatted_start_date', name: 'start_date'},
+                    {data: 'formatted_end_date', name: 'end_date'},
+                    {data: 'formatted_late', searchable:false},
                     {data: 'delay_reason', name: 'delay_reason'},
                     // {data: 'action', name: 'action'}
                 ],

@@ -68,6 +68,7 @@ class UserCompany extends Model
 //                    ?->map?->getWorkedHours1();
 //                return $movs;
                 $atNight = 0;
+                $overtime = 0;
 //                if ($this->working_schedule_id != 2 && count($movs)) {
 //                    foreach ($movs as $mov) {
 //                        $result[] = $mov;
@@ -158,6 +159,7 @@ class UserCompany extends Model
                             $value = '';
                             $endTime = '';
                             $workedSeconds = 0;
+                            $holiday = Holiday::where('date',Carbon::parse($date)->format('Y-m-d'))->first();
                             if($dynamicWorkingScheduleDate){
                                 $minutesOfDelay = generalSetting('minutes_of_delay') * 60;
 //                                if($this->company_id == 2 && $weekDay != 'SATURDAY'){
@@ -199,10 +201,13 @@ class UserCompany extends Model
                                 if ($dynamicWorkingScheduleDate && $dynamicWorkingScheduleDate->dynamic_working_schedule_time_id == 1){
                                     $value = 'დ';
                                 }
-                                $holidays = Holiday::where('date',Carbon::parse($date)->format('Y-m-d'))->first();
-                                if($holidays){
+
+                                if($holiday){
                                     $value = 'დ';
                                 }
+                            }
+                            if($holiday){
+                                $overtime += $workedHours;
                             }
                             $leave = 0;
                             if ($this->contract_date && Carbon::parse($this->contract_date) > Carbon::parse($date)){
@@ -215,15 +220,16 @@ class UserCompany extends Model
                                 $workedHours = 0;
                                 $leave = 2;
                             }
+
                             $result[] = [
                                 'value' => $value,
                                 'week_day' => $weekDay,
-//                                'time' => $dynamicWorkingScheduleDate->dynamic_working_schedule_time->start_time.' - '.$dynamicWorkingScheduleDate->dynamic_working_schedule_time->end_time,
                                 'end_time' => $endTime,
                                 'date' => Carbon::parse($date)->format('Y-m-d'),
                                 'worked_hours' => $workedHours,
                                 'at_night' => $atNight,
-                                'status' => $leave
+                                'status' => $leave,
+                                'overtime' => $overtime
                             ];
                         }
 
@@ -234,7 +240,6 @@ class UserCompany extends Model
         }
         $resultCollection = collect($result);
         $sum = $resultCollection->sum('worked_hours');
-//        return $resultCollection;
         $mustWorkingDays = $resultCollection->filter(function ($item){
             return isset($item['value']) ? ($item['value'] != 'დ' && $item['status'] == 0 && $item['value'] != 'გ') : '';
         })->count();

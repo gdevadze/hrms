@@ -5,7 +5,7 @@
 
             <th scope="col">სახელი, გვარი</th>
             @for($i = 1; $i <= $daysInMonth; $i++)
-                <th scope="col">{{ weekDayName($month,$i) }}<Br>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }} {{ $monthName }}</th>
+                <th scope="col">{{ weekDayName($year,$month,$i) }}<Br>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }} {{ $monthName }}</th>
             @endfor
         </tr>
         </thead>

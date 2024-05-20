@@ -34,6 +34,34 @@ class DynamicWorkingSchedule extends Model
         );
     }
 
+    public function workedHours(): Attribute
+    {
+//        $workedSeconds = Carbon::parse($this->dynamic_working_schedule_time->start_time)->diffInSeconds($this->dynamic_working_schedule_time->end_time);
+//        if($this->dynamic_working_schedule_time->break_duration){
+//            $workedSeconds = Carbon::parse($this->dynamic_working_schedule_time->start_time)->addMinutes($this->dynamic_working_schedule_time->break_duration)->diffInSeconds($this->dynamic_working_schedule_time->end_time);
+//        }
+        $atNight = 0;
+        if($this->dynamic_working_schedule_time->break_duration){
+            if($this->dynamic_working_schedule_time->start_time > '21:00'){
+                $firstTime = Carbon::createFromTimeString($this->dynamic_working_schedule_time->start_time);
+                $secondTime = Carbon::createFromTimeString($this->dynamic_working_schedule_time->end_time)->addDay();
+                $endTime = calculateNightHours($firstTime,$secondTime);
+//                                        $endTime = $firstTime->addMinutes($dynamicWorkingScheduleDate->dynamic_working_schedule_time->break_duration)->diffInHours($secondTime);
+                $workedSeconds = 0;
+                $atNight += $endTime;
+            }else{
+                $workedSeconds = Carbon::parse($this->dynamic_working_schedule_time->start_time)->addMinutes($this->dynamic_working_schedule_time->break_duration)->diffInSeconds($this->dynamic_working_schedule_time->end_time);
+            }
+        }else{
+            $workedSeconds = Carbon::parse($this->dynamic_working_schedule_time->start_time)->diffInSeconds($this->dynamic_working_schedule_time->end_time);
+        }
+
+        $workedHours = (int)($workedSeconds / 3600);
+        return new Attribute(
+            get: fn () => ($workedHours > 0) ? $workedHours : $atNight
+        );
+    }
+
     public function getWorkedHours1()
     {
         // $workedHours = '-';

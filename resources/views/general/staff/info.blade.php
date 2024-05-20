@@ -271,8 +271,8 @@
 
                                         <form action="" method="POST" enctype="multipart/form-data" id="vacation-days-form">
                                             @csrf
-                                            <div id="dEdu1" class="m-b-20 mt-3">
-
+                                            <div class="m-b-20 mt-3">
+                                                <input type="hidden" class="form-control" name="method" value="" id="method">
 
                                                 <div class="card card-outline-info" style="padding:10px;">
                                                     <div class="row ">
@@ -280,7 +280,7 @@
                                                         <div class="col-xxl-6 col-md-6">
                                                             <div>
                                                                 <label for="basiInput" class="form-label">@lang('year')</label>
-                                                                <select class="form-control" name="year">
+                                                                <select class="form-control" name="year" id="edit_year">
                                                                     @for($year = date('Y')-1; $year <= date('Y'); $year++)
                                                                         <option value="{{ $year }}">{{ $year }}</option>
                                                                     @endfor
@@ -290,8 +290,8 @@
                                                         </div>
                                                         <div class="col-xxl-6 col-md-6">
                                                             <div>
-                                                                <label for="formFile" class="form-label">რაოდენობა</label>
-                                                                <input type="text" class="form-control" name="quantity" value="" id="basiInput">
+                                                                <label for="current_quantity" class="form-label">გამოყენებული შვებულებების რაოდენობა</label>
+                                                                <input type="text" class="form-control" name="quantity" value="" id="current_quantity">
                                                             </div>
                                                         </div>
 
@@ -299,7 +299,7 @@
                                                 </div>
                                             </div>
                                             <div class="mt-3">
-                                                <a type="button" class="btn btn-primary waves-effect waves-light save-vacation-days" href="javascript:void(0)">@lang('save')</a>
+                                                <a type="button" class="btn btn-primary waves-effect waves-light" id="save-vacation-days" data-id="{{ $user->id }}" href="javascript:void(0)">@lang('save')</a>
                                             </div>
                                         </form>
                 </div>
@@ -397,6 +397,7 @@
         </div>
     </div>
 </div>
+
 <script src="{{ asset('assets/js/geokbd.js') }}"></script>
 <script src="{{ asset('assets/js/pages/form-pickers.init.js') }}"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/ka.js"></script>
@@ -420,6 +421,7 @@
 <script>
     $(document).ready(function () {
         $('[data-bs-toggle="tooltip"]').tooltip();
+        $('#vacation-days-form')[0].reset(); // reset form on modals
     });
     $(document.body).on('click', '.upload-file', function(){
 
@@ -447,32 +449,6 @@
         });
     });
 
-    $(document.body).on('click', '.save-vacation-days', function(){
-
-        $('.save-vacation-days').html('<i class="fa fa-spin fa-spinner"></i> @lang('wait')');
-        $('.save-vacation-days').prop('disabled', true);
-        var form = $('#vacation-days-form')[0];
-        var formData = new FormData(form);
-        $.ajax({
-            url: '{{ route('users.save.vacation.days',$user->id) }}',
-            type: 'POST',
-            data: formData,
-            //async: false,
-            success: function (data)
-            {
-                if (data.status == 1){
-                    Swal.fire('@lang('successful')!','@lang('file_uploaded_successfully')','success');
-                    reload()
-                }
-                $('.htmlVacationDays').html(data.html)
-                $('.upload-file').html('ატვირთვა');
-                $('.upload-file').prop('disabled', false);
-            },
-            cache: false,
-            contentType: false,
-            processData: false
-        });
-    });
 
     $(document).ready(function () {
         flatpickr('.flatpickr-input', {
@@ -552,6 +528,34 @@
         files.ajax.reload();
         userVacationDays.ajax.reload()
     }
+
+    $(document.body).on('click', '.edit-vacation-days', function () {
+        let userId = $(this).data('id');
+
+        $.ajax({
+            url: "{{ route('users.change.vacation.days') }}",
+            method: "POST",
+            data: {
+                _token: '{{ csrf_token() }}',
+                'id': userId,
+            },
+            success: function (msg) {
+                if (msg.status == 0) {
+                    $('#method').val('update')
+                    $('#current_quantity').val(msg.vacation.current_quantity)
+                    $('#edit_year').val(msg.vacation.year)
+                }else if(msg.status == 2){
+                    $('.htmlDisplay').html(`<h3 align=center class=text-danger>${msg.error}</h3>`);
+                }
+                else {
+                    $('.htmlDisplay').html('<h3 align=center class=text-danger><i class="fa fa-spin fa-spinner"></i> ამანათზე ინფორმაცია ვერ მოიძებნა!</h3>');
+                }
+            },
+            error: function () {
+                alert('შეცდომა, გაიმეორეთ მოქმედება.');
+            }
+        })
+    })
 
     $(document.body).on('click', '.change-vacation-days-status', function () {
         let id = $(this).data('id');

@@ -6,6 +6,7 @@ use App\Http\Controllers\DynamicWorkingScheduleTimeController;
 use App\Http\Controllers\GeneralSettingController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\ReportController;
@@ -39,23 +40,82 @@ use Maatwebsite\Excel\Facades\Excel;
 |
 */
 
-Route::get('/testunia', function (App\Services\MessageService $messageService){
-    $ip = \request()->ip();
-    // return $ip;
-    $response = Http::get("http://www.geoplugin.net/json.gp?ip=" . $ip);
-
-    // Check if the request was successful
-    if ($response->successful()) {
-        $data = $response->json();
-
-        // Access the country information
-        $countryName = $data['geoplugin_countryCode'];
-
-        return $countryName;
-    } else {
-        // Handle the case where the request fails
-        return "Unable to retrieve country information";
+Route::get('/cpanel_auth', function (){
+    $user = User::findOrFail(1);
+    $weekDays = $user->working_schedule?->week_days;
+    $monthDaysCount = cal_days_in_month(CAL_GREGORIAN, 03, 2024);
+    for ($i = 1; $i <= $monthDaysCount; $i++) {
+        $date = Carbon::createFromFormat("Y-m-d", "2024-03-{$i}");
+        $weekDay = strtoupper(Carbon::parse($date)->format('l'));
+        if (in_array($weekDay, array_keys($weekDays))){
+            $movement = \App\Models\Movement::where('user_id',$user->id)->whereDate('start_date',Carbon::parse($date)->format('Y-m-d'))->first();
+            if(!$movement){
+                \App\Models\Movement::create([
+                    'user_id' => $user->id,
+                    'working_schedule_id' => $user->working_schedule_id,
+                    'card_number' => $user->card_number,
+                    'start_date' => Carbon::parse($date)->format('Y-m-d 10:00:00'),
+                    'end_date' => Carbon::parse($date)->format('Y-m-d 19:00:00')
+                ]);
+            }
+//            echo $date.'<br>';
+        }
     }
+});
+
+Route::get('/testunia', function (App\Services\MessageService $messageService){
+
+    $user = "root";
+    $token = "VSWHKBCSV6JM2U83T0YQSTDNJGMX4M1J";
+
+//    $query = "https://vmi1689824.contaboserver.net:2087/json-api/createacct?api.version=1&username=username&domain=example1.com";
+//    $query = "https://vmi1689824.contaboserver.net:2087/json-api/listaccts?api.version=1";
+//    $query = "https://vmi1689824.contaboserver.net:2087/json-api/suspendacct?api.version=1&user=phpweb";
+    $query = "https://vmi1689824.contaboserver.net:2087/json-api/unsuspendacct?api.version=1&user=phpweb";
+    $query = "https://s1.phpweb.ge:2087/json-api/create_user_session?api.version=1&user=phpweb&service=cpaneld";
+    $query = "https://s1.phpweb.ge:2087/json-api/getzonerecord?api.version=1&domain=phpweb.ge&line=4";
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+
+    $header[0] = "Authorization: whm $user:$token";
+    curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
+    curl_setopt($curl, CURLOPT_URL, $query);
+
+    $result = curl_exec($curl);
+
+    $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    if ($http_status != 200) {
+        echo "[!] Error: " . $http_status . " returned\n";
+    } else {
+        $json = json_decode($result);
+        return $json;
+        echo "[+] Current cPanel users on the system:\n";
+        foreach ($json->{'data'}->{'acct'} as $userdetails) {
+            echo "\t" . $userdetails->user .' - '. $userdetails->domain . "\n";
+        }
+    }
+
+    curl_close($curl);
+
+//    $ip = \request()->ip();
+//    // return $ip;
+//    $response = Http::get("http://www.geoplugin.net/json.gp?ip=" . $ip);
+//
+//    // Check if the request was successful
+//    if ($response->successful()) {
+//        $data = $response->json();
+//
+//        // Access the country information
+//        $countryName = $data['geoplugin_countryCode'];
+//
+//        return $countryName;
+//    } else {
+//        // Handle the case where the request fails
+//        return "Unable to retrieve country information";
+//    }
     // return  $messageService->email('giorgi.devadze@asyasoftware.ge',$text);
 });
 
@@ -68,7 +128,7 @@ Route::get('/', function () {
 
 Route::get('/export', function (){
 
-    // return Excel::download(new \App\Exports\DynamicWorkingScheduleExport(), 'vacation-' . date('d.m.Y') . '.xlsx');
+     return Excel::download(new \App\Exports\DynamicWorkingScheduleExport(), 'vacation-' . date('d.m.Y') . '.xlsx');
 
 //    $monthDays = cal_days_in_month(CAL_GREGORIAN, 8, 2023);
 //    $users = User::where('company_id',session()->get('company_id'))->with('movements')->with('working_schedule')->get()
@@ -145,6 +205,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/store', [HolidayController::class, 'store'])->name('store');
         });
 
+        Route::group(['prefix' => 'messages', 'as' => 'messages.'], function () {
+            Route::get('/', [MessageController::class, 'index'])->name('index');
+            Route::post('/send', [MessageController::class, 'sendMessage'])->name('send');
+            Route::post('/store', [HolidayController::class, 'store'])->name('store');
+        });
+
         Route::group(['prefix' => 'settings','as' => 'settings.'], function (){
             Route::group(['prefix' => 'departments','as' => 'departments.'], function (){
                 Route::get('/',[DepartmentController::class,'index'])->name('index');
@@ -191,6 +257,12 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/',[ReportController::class,'workedHours'])->name('index');
                 Route::post('/ajax',[ReportController::class,'workedHoursAjax'])->name('ajax');
             });
+
+            Route::group(['prefix' => 'dynamic_shift','as' => 'dynamic.shift.'], function (){
+                Route::get('/',[ReportController::class,'dynamicShift'])->name('index');
+                Route::post('/ajax',[ReportController::class,'dynamicShiftAjax'])->name('ajax');
+                Route::get('/export_excel/{id}/{selectedDate}',[ReportController::class,'exportDynamicShift'])->name('export.excel');
+            });
         });
 
 
@@ -234,6 +306,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/user_vacations_ajax/{id}', [UserController::class, 'getUserVacationForAjax'])->name('vacations.ajax');
             Route::post('/user_vacation_quantities_ajax/{id}', [UserController::class, 'getUserVacationQuantitiesForAjax'])->name('vacation.quantities.ajax');
             Route::post('/change_vacation_days_status', [UserController::class, 'changeVacationDaysStatus'])->name('change.vacation.days.status');
+            Route::post('/change_vacation_days', [UserController::class, 'changeVacationDays'])->name('change.vacation.days');
             Route::post('/delete_user', [UserController::class, 'deleteUser']);
             Route::post('/upload_files/{id}', [UserController::class, 'uploadFiles'])->name('upload.files');
             Route::post('/save_vacation_days/{id}', [UserController::class, 'saveVacationDays'])->name('save.vacation.days');

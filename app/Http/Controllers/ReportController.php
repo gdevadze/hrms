@@ -79,7 +79,7 @@ class ReportController extends Controller
         return view('pages.reports.hr_table', compact('companies'));
     }
 
-    public function hrTableAjax(Request $request)
+    public function hrTableAjax(Request $request): JsonResponse
     {
         if (!$request->company_id){
             return \jsonResponse(['status' => 2,'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
@@ -96,19 +96,53 @@ class ReportController extends Controller
             ?->map?->getWorkedHoursByDay($year, $month);
         $company = Company::findOrFail($request->company_id);
         $date = Carbon::today()->format('d.m.Y');
-        return jsonResponse(['html' => view('general.reports.hr_table', compact('month_days','users','company','date'))->render(), 'status' => 0]);
+        $startDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-01")->format('Y-m-d');
+        $endDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-".$month_days)->format('Y-m-d');
+        return jsonResponse(['html' => view('general.reports.hr_table', compact('month_days','users','company','date','startDate','endDate'))->render(), 'status' => 0]);
     }
 
     public function exportHrTable($id,$selectedDate)
     {
         $company = Company::findOrFail($id);
-        return Excel::download(new \App\Exports\TabelExport($id,$selectedDate), $company->title.' - ' . date('d.m.Y') . '.xlsx');
+        return Excel::download(new \App\Exports\TabelExport($id,$selectedDate), $company->title.' ('.$company->identification_code.')'.' - ' . date('d.m.Y') . '.xlsx');
     }
 
     public function workedHours(): View
     {
         $companies = Company::all();
         return view('pages.reports.worked_hours', compact('companies'));
+    }
+
+    public function dynamicShift(): View
+    {
+        $companies = Company::all();
+        return view('pages.reports.dynamic_shift', compact('companies'));
+    }
+
+    public function dynamicShiftAjax(Request $request): JsonResponse
+    {
+        if (!$request->company_id){
+            return \jsonResponse(['status' => 2,'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
+        }
+        $year = date('Y');
+        $month = date('m');
+        if($request->selected_date){
+            $year = explode('.',$request->selected_date)[1];
+            $month = explode('.',$request->selected_date)[0];
+            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
+        }
+        $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $users = UserCompany::whereDate('contract_end_date','>=',Carbon::today())->orWhereNull('contract_end_date')->where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->where('working_schedule_id',2)
+            ->get();
+        $company = Company::findOrFail($request->company_id);
+        $date = Carbon::today()->format('d.m.Y');
+        return jsonResponse(['html' => view('general.reports.dynamic_shift', compact('month_days','users','company','date','year','month'))->render(), 'status' => 0]);
+    }
+
+    public function exportDynamicShift($id,$selectedDate)
+    {
+        $company = Company::findOrFail($id);
+        return Excel::download(new \App\Exports\DynamicShiftExport($id,$selectedDate), $company->title.' ('.$company->identification_code.')'.' - ' . date('d.m.Y') . '.xlsx');
     }
 
     public function workedHoursAjax(Request $request)

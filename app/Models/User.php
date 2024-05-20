@@ -79,9 +79,14 @@ class User extends Authenticatable
         return $this->hasMany(DynamicWorkingSchedule::class);
     }
 
-    public function user_vacation_quantities()
+    public function user_vacation_quantities(): HasMany
     {
         return $this->hasMany(UserVacationQuantity::class)->where('status',1);
+    }
+
+    public function user_companies(): HasMany
+    {
+        return $this->hasMany(UserCompany::class);
     }
 
     public function position(): BelongsTo

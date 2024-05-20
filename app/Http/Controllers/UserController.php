@@ -104,13 +104,14 @@ class UserController extends Controller
     public function saveVacationDays(Request $request, $id): JsonResponse
     {
         try {
-            $data = $request->all();
-            UserVacationQuantity::create([
+            UserVacationQuantity::updateOrCreate([
                 'user_id' => $id,
                 'year' => $request->year,
+            ],[
                 'quantity' => 24,
                 'current_quantity' => $request->quantity ?? 0
             ]);
+
             $user = User::findOrFail($id);
             $userVacation = $user->user_vacation_quantities()->sum('quantity');
             $usedUserVacations = $user->user_vacation_quantities()->sum('current_quantity');
@@ -127,7 +128,7 @@ class UserController extends Controller
 
     public function delaysAjax()
     {
-        return Datatables()->of(Movement::query()->whereNotNull('delay_reason'))
+        return Datatables()->of(Movement::query()->with('user')->whereNotNull('delay_reason'))
             ->addIndexColumn()
             ->addColumn('user_full_name', function ($data) {
                 return $data->user->full_name;
@@ -142,11 +143,10 @@ class UserController extends Controller
                 }
             })
             ->addColumn('formatted_late', function ($data) {
-                if($data->checkUser($data->user['working_schedule']['week_days']))
-                    return '<span
-                        class="badge text-bg-success">'.$data->formatted_start_date.'</span>';
+                if($data->checkUser($data['working_schedule']['week_days']))
+                    return '';
                 else{
-                    $test = Carbon::parse($data->start_date)->diffInSeconds($data->checkUserLate($data['user']['working_schedule']['week_days']));
+                    $test = Carbon::parse($data->start_date)->diffInSeconds($data->checkUserLate($data['working_schedule']['week_days']));
                     return ((int)gmdate('H',$test)) ? (int)gmdate('H',$test).' სთ და '.(int)gmdate('i',$test).' წთ' : (int)gmdate('i',$test).' წთ';
                 }
             })
@@ -163,13 +163,13 @@ class UserController extends Controller
                 $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
                 return $html;
             })
-            ->rawColumns(['formatted_end_date', 'action', 'formatted_start_date'])
+            ->rawColumns(['formatted_end_date', 'action', 'formatted_start_date','formatted_late'])
             ->make(true);
     }
 
     public function getUsersForAjax()
     {
-        return Datatables()->of(User::query())
+        return Datatables()->of(User::query()->where('status',1))
             ->addIndexColumn()
             ->addColumn('active_status', function ($data) {
                 $html = '';
@@ -218,9 +218,15 @@ class UserController extends Controller
         return jsonResponse(['status' => 1,'html' => view('general.staff.vacation_days',compact('userVacation','usedUserVacations'))->render()]);
     }
 
+    public function changeVacationDays(Request $request): JsonResponse
+    {
+        $userVacationQuantity = UserVacationQuantity::findOrFail($request->id);
+        return jsonResponse(['status' => 0,'vacation' => $userVacationQuantity]);
+    }
+
     public function getUserVacationQuantitiesForAjax($id): JsonResponse
     {
-        return Datatables()->of(UserVacationQuantity::query()->where('user_id',$id))
+        return Datatables()->of(UserVacationQuantity::query()->where('user_id',$id)->where('status',1))
             ->addIndexColumn()
             ->addColumn('vacation_days', function ($data) {
                 $userVacation = $data->quantity;
@@ -229,10 +235,11 @@ class UserController extends Controller
                 return $userVacation - $usedUserVacations;
             })
             ->addColumn('action', function ($data) {
+                $html = '<button type="button" class="btn rounded-pill btn-primary waves-effect waves-light edit-vacation-days" data-id="'.$data->id.'" data-status="0">რედაქტირება</button> ';
                 if($data->status == 1){
-                    $html = '<button type="button" class="btn rounded-pill btn-danger waves-effect waves-light change-vacation-days-status" data-id="'.$data->id.'" data-status="0">გაუქმება</button>';
+                    $html .= '<button type="button" class="btn rounded-pill btn-danger waves-effect waves-light change-vacation-days-status" data-id="'.$data->id.'" data-status="0">გაუქმება</button>';
                 }else{
-                    $html = '<button type="button" class="btn rounded-pill btn-success waves-effect waves-light change-vacation-days-status" data-id="'.$data->id.'" data-status="1">გააქტიურება</button>';
+                    $html .= '<button type="button" class="btn rounded-pill btn-success waves-effect waves-light change-vacation-days-status" data-id="'.$data->id.'" data-status="1">გააქტიურება</button>';
                 }
                 return $html;
             })

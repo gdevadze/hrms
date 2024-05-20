@@ -44,7 +44,9 @@ class UserVacationController extends Controller
 
     public function createRender(): JsonResponse
     {
-        return jsonResponse(['status' => 0,'html' => view('general.vacations.user.create')->render()]);
+        $userVacations = currentUser()->user_vacation_quantities()->where('year',Carbon::today()->subYear())->sum('quantity');
+        $usedUserVacations = currentUser()->user_vacation_quantities()->where('year',Carbon::today()->subYear())->sum('current_quantity');
+        return jsonResponse(['status' => 0,'html' => view('general.vacations.user.create',compact('userVacations','usedUserVacations'))->render()]);
     }
 
     public function store(UserStoreHonorableReasonRequest $request,MessageService $messageService): JsonResponse
@@ -58,14 +60,24 @@ class UserVacationController extends Controller
             ->where('reason_type',$data['reason_type'])
             ->where('user_id', $data['user_id'])
             ->first();
+        $data['use_previous_year'] = $data['use_previous_year'] ? 1 : 0;
         if($honorableReasonCheck){
             return jsonResponse(['status' => 1,'msg' => __('leave_has_already_been_dates')]);
+        }
+        if($data['use_previous_year'] == 1){
+            $startDate = Carbon::parse($data['start_date']);
+            $count = Carbon::parse($data['end_date'])->diffInDays($startDate);
+            $userVacations = currentUser()->user_vacation_quantities()->where('year',Carbon::today()->subYear())->sum('quantity');
+            $usedUserVacations = currentUser()->user_vacation_quantities()->where('year',Carbon::today()->subYear())->sum('current_quantity');
+            if (($userVacations - $usedUserVacations) <= $count){
+                return \jsonResponse(['status' => 1,'msg' => 'წინა წლის შვებულების მოთხოვნა შეუძლებელია, რაოდენობა აღემატება დარჩენილი შვებულების რაოდენობას']);
+            }
         }
         $vacation = Vacation::create($data);
         $user = $vacation->user;
         $text = "შვებულების მოთხოვნა <br> თანამშრომელი: $user->full_name <br> თარიღი: $vacation->honorable_reason_dates";
         $textEn = "Leave request <br> Employee: $user->full_name <br> Date: $vacation->honorable_reason_dates";
-        $messageService->email('giorgi.devadze@asyasoftware.ge',$textEn);
+//        $messageService->email('giorgi.devadze@asyasoftware.ge',$textEn);
         // if(currentUser()->manager_id){
         //     $manager = User::findOrFail(currentUser()->manager_id);
         //     $messageService->email($manager->email,$text);

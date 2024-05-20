@@ -28,13 +28,13 @@
     </tr>
     <tr>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 height="21" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4328;&#4308;&#4307;&#4306;&#4308;&#4316;&#4312; &#4311;&#4304;&#4320;&#4312;&#4326;&#4312;</font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $date }}</font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan={{ $month_days + 5 }} rowspan=2 align="center" valign=middle><b><font face="Sylfaen" color="#000000">01-დან-{{ $month_days }}-მდე</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ \Carbon\Carbon::parse($date)->format('10.m.Y') }}</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan={{ $month_days + 5 }} rowspan=2 align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $startDate }}-დან {{ $endDate }}-მდე</font></b></td>
     </tr>
     <tr>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 height="21" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4321;&#4304;&#4304;&#4316;&#4306;&#4304;&#4320;&#4312;&#4328;&#4317; &#4318;&#4308;&#4320;&#4312;&#4317;&#4307;&#4312;</font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">01-დან</font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $month_days }}-მდე</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $startDate }}-დან</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $endDate }}-მდე</font></b></td>
     </tr>
     <tr>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan={{ $month_days+10 }} rowspan=2 height="39" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -94,6 +94,7 @@
                 $totalHolidays = 0;
                 $others = 0;
                 $atNight = 0;
+                $overtime = 0;
             @endphp
             @foreach($user['result'] as $res)
                 <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle sdval="8" sdnum="1033;"><b>
@@ -116,14 +117,17 @@
                                     if(isset($res['at_night']) && ($res['at_night'])){
                                         $atNight += $res['at_night'];
                                     }
+                                    if(isset($res['overtime']) && ($res['overtime'])){
+                                        $overtime += $res['overtime'];
+                                    }
                                 @endphp
                             @endisset
                         </font>
                     </b></td>
             @endforeach
             <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle sdval="19" sdnum="1033;"><b><font face="Sylfaen" color="#000000">{{ $user['data']['must_working_days'] }}</font></b></td>
-            <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle sdval="152" sdnum="1033;"><b><font face="Sylfaen" color="#000000">{{ $user['data']['summary_worked_hours'] }}</font></b></td>
-            <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+            <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle sdval="152" sdnum="1033;"><b><font face="Sylfaen" color="#000000">{{ $user['data']['summary_worked_hours'] - $atNight - $overtime }}</font></b></td>
+            <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ ($overtime > 0) ? $overtime : '' }}</font></b></td>
             <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ ($atNight > 0) ? $atNight : '' }}</font></b></td>
             <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle sdval="9" sdnum="1033;"><b><font face="Sylfaen" color="#000000">{{ $totalHolidays }}</font></b></td>
             <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">{{ $others }}</font></b></td>
@@ -424,9 +428,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">X</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">ა/შ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"> &#4307;&#4304;&#4321;&#4309;&#4308;&#4316;&#4308;&#4305;&#4312;&#4321; &#4307;&#4304; &#4323;&#4325;&#4315;&#4308; &#4307;&#4326;&#4308;&#4308;&#4305;&#4312;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">ანაზღაურებადი შვებულება</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -464,9 +468,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4328;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">უ/შ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4328;&#4309;&#4308;&#4305;&#4323;&#4314;&#4308;&#4305;&#4304; &#4304;&#4316;&#4304;&#4310;&#4326;&#4304;&#4323;&#4320;&#4308;&#4305;&#4304;&#4307;&#4312;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">ანაზღაურების გარეშე შვებულება</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -504,9 +508,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4323;/&#4328;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="18" align="center" valign=middle><b><font face="Sylfaen" color="#000000">ს/ფ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4304;&#4316;&#4304;&#4310;&#4326;&#4304;&#4323;&#4320;&#4308;&#4305;&#4312;&#4321; &#4306;&#4304;&#4320;&#4308;&#4328;&#4308; &#4328;&#4309;&#4308;&#4305;&#4323;&#4314;&#4308;&#4305;&#4304;  </font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">საავადმყოფო ფურცელი</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -544,9 +548,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="18" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4321;/&#4324;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დ/შ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4321;&#4304;&#4304;&#4309;&#4304;&#4307;&#4315;&#4327;&#4317;&#4324;&#4317; &#4324;&#4323;&#4320;&#4330;&#4308;&#4314;&#4312; </font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დეკრეტული შვებულება (ანაზღაურებადი)</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -584,9 +588,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="37" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4307;/&#4328;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="18" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4307;&#4308;&#4313;&#4320;&#4308;&#4322;&#4323;&#4314;&#4312; &#4328;&#4309;&#4308;&#4305;&#4323;&#4314;&#4308;&#4305;&#4304; (&#4304;&#4316;&#4304;&#4310;&#4326;&#4304;&#4323;&#4320;&#4308;&#4305;&#4304;&#4307;&#4312;)</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დასვენება, უქმე დღე</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -624,9 +628,9 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="18" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4307;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="28" align="center" valign=middle><b><font face="Sylfaen" color="#000000">გ</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4307;&#4304;&#4321;&#4309;&#4308;&#4316;&#4308;&#4305;&#4304;, &#4323;&#4325;&#4315;&#4308; &#4307;&#4326;&#4308;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">გაცდენა</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
@@ -664,9 +668,49 @@
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
     </tr>
     <tr>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="28" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4306;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="28" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დშა</font></b></td>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4306;&#4304;&#4330;&#4307;&#4308;&#4316;&#4304;</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დეკრეტული შვებულება - ანაზღაურებადი</font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+    </tr>
+    <tr>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="28" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დშუ</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000"><br></font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="center" valign=middle><b><font face="Sylfaen" color="#000000">დეკრეტული შვებულება - ანაზღაურების გარეშე</font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>
         <td align="left" valign=bottom><b><font face="Sylfaen" color="#000000"><br></font></b></td>

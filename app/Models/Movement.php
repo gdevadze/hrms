@@ -39,7 +39,6 @@ class Movement extends Model
         if($this->working_schedule_id == 2 && $this->dynamic_working_schedule_id){
             $dynamicWorkingScheduleDate = DynamicWorkingSchedule::where('user_id',$this->user_id)->where('date',Carbon::parse($this->start_date)->format('Y-m-d'))->first();
             $date = $dynamicWorkingScheduleDate;
-//            return $date;
             if($date){
                 if ($late){
                     return (date('H:i', strtotime($date->dynamic_working_schedule_time->end_time)) <= date('H:i', strtotime($this->end_date)));
@@ -66,7 +65,14 @@ class Movement extends Model
     public function checkUserLate($data = [])
     {
         $date = $this->start_date;
-
+        $minutesOfDelay = generalSetting('minutes_of_delay') * 60;
+        if($this->working_schedule_id == 2 && $this->dynamic_working_schedule_id){
+            $dynamicWorkingScheduleDate = DynamicWorkingSchedule::where('user_id',$this->user_id)->where('date',Carbon::parse($this->start_date)->format('Y-m-d'))->first();
+            $date = $dynamicWorkingScheduleDate;
+            if($date){
+                return (date('H:i', strtotime($date->dynamic_working_schedule_time->start_time)) >= date('H:i', strtotime($this->start_date) - $minutesOfDelay));
+            }
+        }
         $weekDay = strtoupper(Carbon::parse($date)->format('l'));
         $agenda = $data[$weekDay] ?? null;
         if ($agenda == null) {

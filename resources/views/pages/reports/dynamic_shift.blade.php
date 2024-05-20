@@ -7,7 +7,6 @@
           href="{{ asset('assets/cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css') }}"/>
 
     <link rel="stylesheet" href="{{ asset('assets/cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css') }}">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 @endpush
 @section('content')
@@ -21,7 +20,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                            <h4 class="mb-sm-0">ტაბელი</h4>
+                            <h4 class="mb-sm-0">დინამიური შიფტი</h4>
 
                         </div>
                     </div>
@@ -33,11 +32,7 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1">ტაბელი</h4>
-                        {{--                        <div class="flex-shrink-0">--}}
-                        {{--                            <a type="button" class="btn btn-primary waves-effect waves-light" id="add_position"--}}
-                        {{--                               href="javascript:void(0)"><i class="fa fa-plus-square-o"></i> დამატება</a>--}}
-                        {{--                        </div>--}}
+                        <h4 class="card-title mb-0 flex-grow-1">დინამიური შიფტი</h4>
                     </div><!-- end card header -->
                     <div class="card-body">
                         <div class="row mb-2">
@@ -65,32 +60,6 @@
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="modal_form_detail" tabindex="-1" role="dialog"
-         aria-labelledby="exampleStandardModalLabel"
-         data-bs-backdrop="static"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal_title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="htmlDisplay"></div>
-                </div>
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i
-                            class="fa fa-times mr-2"
-                            aria-hidden="true"></i> დახურვა
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
 @endsection
 
 @push('js')
@@ -121,7 +90,7 @@
             let selectedDate = $('#fltpcks').val()
             console.log(companyId,selectedDate)
             if(companyId){
-                let route = "{{ route('reports.hr_table.export.excel', [':id',':selectedDate']) }}"
+                let route = "{{ route('reports.dynamic.shift.export.excel', [':id',':selectedDate']) }}"
                 route = route.replace(':id', companyId);
                 route = route.replace(':selectedDate', selectedDate);
                 // location.href = route;
@@ -135,7 +104,7 @@
         function loadHrTable(){
             $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> დაელოდეთ...</h3>');
             $.ajax({
-                url: "{{ route('reports.hr_table.ajax') }}",
+                url: "{{ route('reports.dynamic.shift.ajax') }}",
                 method: "POST",
                 data: {
                     '_token': '{{ csrf_token() }}',

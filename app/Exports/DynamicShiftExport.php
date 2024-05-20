@@ -9,7 +9,7 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class TabelExport implements FromView,ShouldAutoSize
+class DynamicShiftExport implements FromView,ShouldAutoSize
 {
     protected $id;
     protected $selectedDate;
@@ -28,21 +28,11 @@ class TabelExport implements FromView,ShouldAutoSize
             $month = explode('.',$this->selectedDate)[0];
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
         }
-
-        $monthDays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $users = UserCompany::where('company_id',$this->id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
-            ?->map?->getWorkedHoursByDay($year, $month);
+        $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $users = UserCompany::where('company_id', $this->id)->where('status',1)->whereNotNull('working_schedule_id')->where('working_schedule_id',2)
+            ->get();
         $company = Company::findOrFail($this->id);
         $date = Carbon::today()->format('d.m.Y');
-        $startDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-01")->format('Y-m-d');
-        $endDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-".$monthDays)->format('Y-m-d');
-        return view('exports.report', [
-            'users' => $users,
-            'company' => $company,
-            'date' => $date,
-            'month_days' => $monthDays,
-            'startDate' => $startDate,
-            'endDate' => $endDate
-        ]);
+        return view('exports.dynamic_shift', compact('month_days','users','company','date','year','month'));
     }
 }

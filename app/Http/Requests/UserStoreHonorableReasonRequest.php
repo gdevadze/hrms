@@ -25,7 +25,8 @@ class UserStoreHonorableReasonRequest extends FormRequest
     {
         return [
             'start_date' => 'required',
-            'end_date' => 'required'
+            'end_date' => 'required',
+            'use_previous_year' => ''
         ];
     }
 

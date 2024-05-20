@@ -211,6 +211,36 @@
             })
         })
 
+        $(document.body).on('click', '#save-vacation-days', function(){
+
+            {{--$(this).html('<i class="fa fa-spin fa-spinner"></i> @lang('wait')dtd');--}}
+            // $(this).prop('disabled', true);
+            var form = $('#vacation-days-form')[0];
+            var formData = new FormData(form);
+            userId = $('#save-vacation-days').data('id');
+            let route = "{{ route('users.save.vacation.days', ':id') }}"
+            route = route.replace(':id', userId);
+            $.ajax({
+                url: route,
+                type: 'POST',
+                data: formData,
+                success: function (data)
+                {
+                    $(this).html('შენახვა');
+                    $(this).prop('disabled', false);
+                    if (data.status == 1){
+                        Swal.fire('@lang('successful')!','შვებულება წარმატებით განახლდა','success');
+                        reload()
+                    }
+                    // console.log($(this).html())
+                    $('.htmlVacationDays').html(data.html)
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+
         $(document.body).on('click', '.staff_info', function () {
             let userId = $(this).data('id');
             $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded
@@ -226,6 +256,7 @@
                 success: function (msg) {
                     if (msg.status == 0) {
                         $('.htmlDisplay').html(msg.html);
+                        $('#vacation-days-form')[0].reset(); // reset form on modals
                     }else if(msg.status == 2){
                         $('.htmlDisplay').html(`<h3 align=center class=text-danger>${msg.error}</h3>`);
                     }

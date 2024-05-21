@@ -57,15 +57,59 @@
                 <span class="text-danger errors birthdate_err"></span>
             </div>
         </div>
-        <div class="col-xxl-4 col-md-6">
-            <div>
-                <label for="birthdate" class="form-label">@lang('company')</label>
-                <select class="form-select mb-3" name="company_id">
-                    @foreach($companies as $company)
-                        <option value="{{ $company->id }}">{{ $company->title }} ({{ $company->identification_code }})</option>
-                    @endforeach
-                </select>
-                <span class="text-danger errors birthdate_err"></span>
+
+        <div id="dEdu1" class="m-b-20 mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="f15 text-info"><strong>კომპანია <span id="gan">1</span></strong>
+                    </div>
+                </div>
+                <div class="col-md-6" align="right">
+                    <a href="javascript:void(0)" class="text-success Banner AddEdu" id="1"
+                       style="display: inline;"><i class="fa fa-plus-square-o fa-lg"></i> დამატება</a>
+                    &nbsp;
+                    <a href="javascript:void(0)" class="text-danger Banner DelEdu" id="1"
+                       style="display: inline;"><i class="fa fa-trash-o fa-lg"></i> წაშლა</a>
+
+                </div>
+            </div>
+            <div class="card card-outline-info" style="padding:10px;">
+                <div class="row ">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="company_id_1">კომპანია</label>
+                            <select name="company_ids[]" id="company_id_1" class="form-control">
+                                <option selected disabled>აირჩიეთ</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}">{{ $company->title }} ({{ $company->identification_code }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="position_id_1">პოზიცია</label>
+                            <select name="position_ids[]" id="position_id_1" class="form-control">
+                                <option selected disabled>აირჩიეთ</option>
+                                @foreach($positions as $position)
+                                    <option value="{{ $position->id }}">{{ $position->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="working_schedule_id_1">გრაფიკი</label>
+                            <select name="working_schedule_ids[]" id="working_schedule_id_1" class="form-control">
+                                <option selected disabled>აირჩიეთ</option>
+                                @foreach($workingSchedules as $workingSchedule)
+                                    <option value="{{ $workingSchedule->id }}">{{ $workingSchedule->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -94,5 +138,41 @@
                 document.querySelector("div").appendChild(divEl);
             }
         });
+    });
+
+    $(document).on('click', '.AddEdu', function () {
+        let nid = $(this).attr('id');
+        let content = $('#dEdu' + nid).html();
+        let newId = parseInt(nid) + 1;
+        let newdiv = $("<div id='dEdu" + newId + "' class='m-b-20'>");
+        newdiv.html(content);
+        newdiv.find(".AddEdu").attr("id", newId);
+        newdiv.find(".DelEdu").attr("id", newId);
+
+        newdiv.find("#company_id_" + nid).attr("id", "company_id_" + newId);
+        newdiv.find("#company_id_" + nid).attr("for", "company_id_" + newId);
+        newdiv.find("#position_id_" + nid).attr("id", "position_id_" + newId);
+        newdiv.find("#position_id_" + nid).attr("for", "position_id_" + newId);
+        newdiv.find("#working_schedule_id_" + nid).attr("id", "working_schedule_id_" + newId);
+        newdiv.find("#working_schedule_id_" + nid).attr("for", "working_schedule_id_" + newId);
+
+        newdiv.find("#gan").html(newId);
+        newdiv.find("input").val("");
+
+        $('.AddEdu').hide();
+        $('.DelEdu').hide();
+        $('#dEdu' + nid).after(newdiv);
+        $('#percent_' + newId).val($('#percent_1').val())
+    });
+
+    $(document).on('click', '.DelEdu', function () {
+        var did = $(this).attr('id');
+        if (did > 1) {
+            $('#dEdu' + did).remove();
+            $('.AddEdu').last().show();
+            $('.DelEdu').last().show();
+        } else {
+            Swal.fire('შეცდომა!', 'წაშლა შეუძლებელია!', 'warning');
+        }
     });
 </script>

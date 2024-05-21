@@ -6,10 +6,12 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Company;
 use App\Models\Movement;
+use App\Models\Position;
 use App\Models\Sold;
 use App\Models\UserFile;
 use App\Models\UserVacationQuantity;
 use App\Models\Vacation;
+use App\Models\WorkingSchedule;
 use App\Services\Contracts\WorkSchedulingServiceContract;
 use App\Services\UserService;
 use Carbon\Carbon;
@@ -292,18 +294,30 @@ class UserController extends Controller
     public function createRender(): JsonResponse
     {
         $companies = Company::all();
-        return jsonResponse(['html' => view('general.users.create',compact('companies'))->render(),'status' => 0]);
+        $workingSchedules = WorkingSchedule::all();
+        $positions = Position::all();
+        return jsonResponse(['html' => view('general.users.create',compact('companies','workingSchedules','positions'))->render(),'status' => 0]);
     }
 
     public function store(StoreUserRequest $request, UserService $userService)
     {
         $input = $request->all();
         $input['password'] = Hash::make('password');
-        $input['working_schedule_id'] = 1;
+        $input['working_schedule_id'] = $request->working_schedule_ids[0];
+        $input['company_id'] = $request->company_ids[0];
         $input['card_number'] = $userService->generateNumber();
         $input['tel'] = str_replace(' ','',$request->tel);
         $input['birthdate'] = Carbon::parse($input['birthdate'])->format('Y-m-d');
         $user = User::create($input);
+        if($request->company_ids){
+            for ($i = 0; $i < count($request->company_ids); $i++) {
+                $user->user_companies()->create([
+                    'company_id' => $request->post('company_ids')[$i],
+                    'working_schedule_id' => $request->post('working_schedule_ids')[$i],
+                    'position_id' => $request->post('position_ids')[$i]
+                ]);
+            }
+        }
         $user->assignRole(1);
 
         return jsonResponse(['status' => 0,'msg' => 'თანამშრომელი წარმატებით დაემატა, კოდი: '.$input['card_number']]);

@@ -33,7 +33,7 @@ class StoreUserRequest extends FormRequest
             'personal_num' => 'required|unique:users,personal_num',
             'birthdate' => 'required',
             'password' => 'same:confirm-password',
-            'company_id' => 'required'
+            'company_ids' => 'required'
         ];
     }
 

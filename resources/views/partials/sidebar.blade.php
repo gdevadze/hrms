@@ -55,11 +55,11 @@
             @endif
 
             @if(!currentUser()->hasRole('User'))
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="{{ route('messages.index') }}">
-                        <i class="ri-message-fill"></i> <span data-key="t-widgets">SMS შეტყობინებები</span>
-                    </a>
-                </li>
+{{--                <li class="nav-item">--}}
+{{--                    <a class="nav-link menu-link" href="{{ route('messages.index') }}">--}}
+{{--                        <i class="ri-message-fill"></i> <span data-key="t-widgets">SMS შეტყობინებები</span>--}}
+{{--                    </a>--}}
+{{--                </li>--}}
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarEmployees" data-bs-toggle="collapse" role="button"
                        aria-expanded="false" aria-controls="sidebarDashboards">
@@ -130,10 +130,10 @@
                                 <a href="{{ route('settings.general.index') }}" class="nav-link"
                                    data-key="t-analytics">ზოგადი პარამეტრები</a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('settings.departments.index') }}" class="nav-link"
-                                   data-key="t-analytics">დეპარტამენტები</a>
-                            </li>
+{{--                            <li class="nav-item">--}}
+{{--                                <a href="{{ route('settings.departments.index') }}" class="nav-link"--}}
+{{--                                   data-key="t-analytics">დეპარტამენტები</a>--}}
+{{--                            </li>--}}
                             <li class="nav-item">
                                 <a href="{{ route('settings.positions.index') }}" class="nav-link"
                                    data-key="t-analytics">პოზიციები</a>

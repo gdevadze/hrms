@@ -15,8 +15,9 @@ class GeneralSettingController extends Controller
         return view('pages.settings.general_settings',compact('generalSettings'));
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request)
     {
+//        return $request->all();
         foreach ($request->settings as $key => $value) {
             GeneralSetting::firstWhere('key', $key)->update([
                 'value' => $value

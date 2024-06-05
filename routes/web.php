@@ -27,8 +27,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
 use Maatwebsite\Excel\Facades\Excel;
-
+use Rats\Zkteco\Lib\ZKTeco;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -40,27 +41,29 @@ use Maatwebsite\Excel\Facades\Excel;
 |
 */
 
-Route::get('/cpanel_auth', function (){
-    $user = User::findOrFail(1);
-    $weekDays = $user->working_schedule?->week_days;
-    $monthDaysCount = cal_days_in_month(CAL_GREGORIAN, 03, 2024);
-    for ($i = 1; $i <= $monthDaysCount; $i++) {
-        $date = Carbon::createFromFormat("Y-m-d", "2024-03-{$i}");
-        $weekDay = strtoupper(Carbon::parse($date)->format('l'));
-        if (in_array($weekDay, array_keys($weekDays))){
-            $movement = \App\Models\Movement::where('user_id',$user->id)->whereDate('start_date',Carbon::parse($date)->format('Y-m-d'))->first();
-            if(!$movement){
-                \App\Models\Movement::create([
-                    'user_id' => $user->id,
-                    'working_schedule_id' => $user->working_schedule_id,
-                    'card_number' => $user->card_number,
-                    'start_date' => Carbon::parse($date)->format('Y-m-d 10:00:00'),
-                    'end_date' => Carbon::parse($date)->format('Y-m-d 19:00:00')
-                ]);
-            }
-//            echo $date.'<br>';
-        }
-    }
+Route::get('/zktec', function (\App\Services\ZKTecoService $ZKTecoService){
+    $zk = new ZktecoLib('212.72.131.20','4370');
+    $zk->connect();
+//    $user = User::findOrFail(1);
+//    $weekDays = $user->working_schedule?->week_days;
+//    $monthDaysCount = cal_days_in_month(CAL_GREGORIAN, 03, 2024);
+//    for ($i = 1; $i <= $monthDaysCount; $i++) {
+//        $date = Carbon::createFromFormat("Y-m-d", "2024-03-{$i}");
+//        $weekDay = strtoupper(Carbon::parse($date)->format('l'));
+//        if (in_array($weekDay, array_keys($weekDays))){
+//            $movement = \App\Models\Movement::where('user_id',$user->id)->whereDate('start_date',Carbon::parse($date)->format('Y-m-d'))->first();
+//            if(!$movement){
+//                \App\Models\Movement::create([
+//                    'user_id' => $user->id,
+//                    'working_schedule_id' => $user->working_schedule_id,
+//                    'card_number' => $user->card_number,
+//                    'start_date' => Carbon::parse($date)->format('Y-m-d 10:00:00'),
+//                    'end_date' => Carbon::parse($date)->format('Y-m-d 19:00:00')
+//                ]);
+//            }
+////            echo $date.'<br>';
+//        }
+//    }
 });
 
 Route::get('/testunia', function (App\Services\MessageService $messageService){

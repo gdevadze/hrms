@@ -196,7 +196,9 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\ViewServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
-        Mccarlosen\LaravelMpdf\LaravelMpdfServiceProvider::class
+        Mccarlosen\LaravelMpdf\LaravelMpdfServiceProvider::class,
+        Laradevsbd\Zkteco\ZktecoServiceProvider::class,
+
     ],
 
     /*

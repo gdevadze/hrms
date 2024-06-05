@@ -19,7 +19,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                            <h4 class="mb-sm-0">პოზიციები</h4>
+                            <h4 class="mb-sm-0">ზოგადი პარამეტრები</h4>
 
                         </div>
                     </div>
@@ -31,11 +31,7 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1">პოზიციები</h4>
-                        <div class="flex-shrink-0">
-                            <a type="button" class="btn btn-primary waves-effect waves-light" id="add_position"
-                               href="javascript:void(0)"><i class="fa fa-plus-square-o"></i> დამატება</a>
-                        </div>
+                        <h4 class="card-title mb-0 flex-grow-1">ზოგადი პარამეტრები</h4>
                     </div><!-- end card header -->
                     <div class="card-body">
                         @if ($message = Session::get('success'))
@@ -58,13 +54,23 @@
                         <form action="{{ route('settings.general.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @foreach($generalSettings as $generalSetting)
-                                <div class="mb-3 row">
-                                    <label for="setting-{{ $generalSetting->id }}" class="col-md-2 col-form-label">{{ $generalSetting->title }}</label>
-                                    <div class="col-md-10">
-                                        <input class="form-control" type="text" value="{{ $generalSetting->value }}"
-                                               name="settings[{{ $generalSetting->key }}]" id="setting-{{ $generalSetting->id }}">
+                                @if($generalSetting->type == 'img')
+                                    <img src="{{ $generalSetting->value }}">
+                                    <div class="mb-3 row">
+                                        <label for="setting-{{ $generalSetting->id }}" class="col-md-2 col-form-label">{{ $generalSetting->title }}</label>
+                                        <div class="col-md-10">
+                                            <input class="form-control" type="file" name="settings[{{ $generalSetting->key }}]" id="setting-{{ $generalSetting->id }}">
+                                        </div>
                                     </div>
-                                </div>
+                                @else
+                                    <div class="mb-3 row">
+                                        <label for="setting-{{ $generalSetting->id }}" class="col-md-2 col-form-label">{{ $generalSetting->title }}</label>
+                                        <div class="col-md-10">
+                                            <input class="form-control" type="text" value="{{ $generalSetting->value }}"
+                                                   name="settings[{{ $generalSetting->key }}]" id="setting-{{ $generalSetting->id }}">
+                                        </div>
+                                    </div>
+                                @endif
                             @endforeach
                             <button type="submit" class="btn btn-outline-primary waves-effect waves-light">
                                 განახლება

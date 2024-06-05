@@ -229,11 +229,10 @@
                 <div class="col-sm-6">
                     <script>document.write(new Date().getFullYear())</script> © HRMS.
                 </div>
-                <div class="col-sm-6">
-                    <div class="text-sm-end d-none d-sm-block">
-                        Design & Develop by <a href="https://asyasoftware.ge" target="_blank">Asyasoftware</a>
-                    </div>
-                </div>
+{{--                <div class="col-sm-6">--}}
+{{--                    <div class="text-sm-end d-none d-sm-block">--}}
+{{--                    </div>--}}
+{{--                </div>--}}
             </div>
         </div>
     </footer>

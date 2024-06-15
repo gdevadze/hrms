@@ -45,7 +45,7 @@
                     <div class="text-center mt-sm-5 mb-4 text-white-50">
                         <div>
                             <a href="index.html" class="d-inline-block auth-logo">
-                                <img src="{{ asset('assets/images/asya-white.svg') }}" alt="" height="70">
+                                <img src="https://www.batumiview.com/assets/v4/images/logo.png" alt="" height="70">
                             </a>
                         </div>
 {{--                        <p class="mt-3 fs-15 fw-medium">თანამშრომლების აღრიცხვის პროგრამა</p>--}}
@@ -128,8 +128,7 @@
                 <div class="col-lg-12">
                     <div class="text-center">
                         <p class="mb-0 text-muted">&copy;
-                            <script>document.write(new Date().getFullYear())</script> HRMS. Developed <i class="mdi mdi-heart text-danger"></i> by
-                            <a href="https://asyasoftware.ge/" target="_blank">Asyasoftware</a>
+                            <script>document.write(new Date().getFullYear())</script> HRMS
                         </p>
                     </div>
                 </div>

@@ -127,7 +127,7 @@ Route::get('/', function () {
         return redirect()->to('dashboard');
     }
     return view('auth.login');
-});
+})->name('index');
 
 Route::get('/export', function (){
 

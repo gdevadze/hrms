@@ -114,7 +114,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
                                 @endif
-                            @if(in_array(request()->ip(), $ipCollection))
+                            @if(in_array(getIp(), $ipCollection))
                                 @isset($todayMovement)
                                     <p>@lang('revelation_time')
                                         : {{ $todayMovement->formatted_start_date }} @isset($todayMovement->end_date)
@@ -144,6 +144,7 @@
                                     </div>
 
                                 @endif
+                                <p>{{ getIp() }}</p>
                             </div>
 
                         </div> <!-- .card-->

@@ -227,6 +227,8 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/create',[PositionController::class,'create'])->name('create');
                 Route::post('/store',[PositionController::class,'store'])->name('store');
                 Route::post('/ajax',[PositionController::class,'ajax'])->name('ajax');
+                Route::post('/edit',[PositionController::class,'edit'])->name('edit');
+                Route::post('/update/{id}',[PositionController::class,'update'])->name('update');
             });
 
             Route::group(['prefix' => 'readers', 'as' => 'readers.'], function (){

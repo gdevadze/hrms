@@ -123,9 +123,9 @@
                 },
                 columns: [
                     {data: 'id', name: 'id'},
-                    {data: 'full_name', name: 'full_name'},
-                    {data: 'tel', name: 'tel'},
-                    {data: 'personal_num', name: 'email'},
+                    {data: 'user_full_name', name: 'user.full_name'},
+                    {data: 'user_tel', name: 'user_tel'},
+                    {data: 'user_personal_num', name: 'user_personal_num'},
                     {data: 'action', name: 'action'},
 
                 ],

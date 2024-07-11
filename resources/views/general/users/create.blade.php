@@ -57,6 +57,17 @@
                 <span class="text-danger errors birthdate_err"></span>
             </div>
         </div>
+        <div class="col-xxl-4 col-md-6">
+            <div class="form-group">
+                <label for="company_id_1">პროგრამაზე დაშვება</label>
+                <select name="roles" id="role_id" class="form-control">
+                    <option value="">აირჩიეთ</option>
+                    @foreach ($roles as $role)
+                        <option value="{{$role->name}}" @selected($role->name == 'მომხმარებელი')>{{$role->name}}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
 
         <div id="dEdu1" class="m-b-20 mt-3">
             <div class="row">

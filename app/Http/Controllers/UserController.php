@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Movement;
 use App\Models\Position;
 use App\Models\Sold;
+use App\Models\UserCompany;
 use App\Models\UserFile;
 use App\Models\UserVacationQuantity;
 use App\Models\Vacation;
@@ -44,9 +45,9 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $data = User::orderBy('id', 'DESC')->paginate(5);
-        return view('pages.users.index', compact('data'))
-            ->with('i', ($request->input('page', 1) - 1) * 5);
+        $positions = Position::all();
+        $roles = Role::where('name','!=','System Administrator')->get();
+        return view('pages.users.index',compact('positions','roles'));
     }
 
     public function changePassword()
@@ -169,9 +170,18 @@ class UserController extends Controller
             ->make(true);
     }
 
-    public function getUsersForAjax()
+    public function getUsersForAjax(Request $request)
     {
-        return Datatables()->of(User::query()->where('status',1))
+        $users = User::query()->where('status',1);
+        if($request->role_id){
+            $users = $users->role($request->role_id);
+        }
+        if($request->position_id){
+            $users = $users->whereHas('user_companies', function ($q) use($request){
+                return $q->where('position_id',$request->position_id);
+            });
+        }
+        return Datatables()->of($users)
             ->addIndexColumn()
             ->addColumn('active_status', function ($data) {
                 $html = '';
@@ -269,15 +279,26 @@ class UserController extends Controller
 
     public function subordinatesAjax(): JsonResponse
     {
-        return Datatables()->of(User::query()->where('manager_id',currentUser()->id))
+        return Datatables()->of(UserCompany::query()->whereHas('position',function ($q){
+            return $q->where('manager_id',currentUser()->id);
+        }))
             ->addIndexColumn()
+            ->addColumn('user_full_name', function ($data) {
+                return $data->user->full_name;
+            })
+            ->addColumn('user_tel', function ($data) {
+                return $data->user->tel;
+            })
+            ->addColumn('user_personal_num', function ($data) {
+                return $data->user->personal_num;
+            })
             ->addColumn('download_file', function ($data) {
-                $html = ' <a class="btn btn-soft-secondary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('download_file').'" href="'.route('users.download.file',$data->id).'"><i class="ri-download-2-line" aria-hidden="true"></i></a>';
+                $html = ' <a class="btn btn-soft-secondary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('download_file').'" href="'.route('users.download.file',$data->user_id).'"><i class="ri-download-2-line" aria-hidden="true"></i></a>';
                 return $html;
             })
             ->addColumn('action', function ($data) {
-                $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
-                $html = $html.= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
+                $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->user_id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
+                $html = $html.= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->user_id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
                 return $html;
             })
             ->rawColumns(['download_file', 'action', 'active_status'])
@@ -296,7 +317,8 @@ class UserController extends Controller
         $companies = Company::all();
         $workingSchedules = WorkingSchedule::all();
         $positions = Position::all();
-        return jsonResponse(['html' => view('general.users.create',compact('companies','workingSchedules','positions'))->render(),'status' => 0]);
+        $roles = Role::where('name','!=','System Administrator')->get();
+        return jsonResponse(['html' => view('general.users.create',compact('companies','workingSchedules','positions','roles'))->render(),'status' => 0]);
     }
 
     public function store(StoreUserRequest $request, UserService $userService)
@@ -314,13 +336,13 @@ class UserController extends Controller
                 $user->user_companies()->create([
                     'company_id' => $request->post('company_ids')[$i],
                     'working_schedule_id' => $request->post('working_schedule_ids')[$i],
-                    'position_id' => $request->post('position_ids')[$i]
+                    'position_id' => isset($request->post('position_ids')[$i]) ? $request->post('position_ids')[$i] : null
                 ]);
             }
         }
-        $user->assignRole(1);
+        $user->assignRole($request->input('roles'));
 
-        return jsonResponse(['status' => 0,'msg' => 'თანამშრომელი წარმატებით დაემატა, კოდი: '.$input['card_number']]);
+        return jsonResponse(['status' => 0,'msg' => 'თანამშრომელი წარმატებით დაემატა, პაროლი: '.$input['tel']]);
     }
 
     public function show($id)

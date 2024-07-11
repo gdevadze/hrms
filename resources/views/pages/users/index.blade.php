@@ -36,6 +36,27 @@
                         </div>
                     </div><!-- end card header -->
                     <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="form-group col-md-6">
+                                <strong>პროგრამაზე დაშვება</strong>
+                                <select class="form-control" id="role_id">
+                                    <option value="">აირჩიეთ</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <strong>პოზიცია</strong>
+                                <select class="form-control" id="position_id">
+                                    <option selected value="">აირჩიეთ</option>
+                                    @foreach($positions as $position)
+                                    <option value="{{ $position->id }}">{{ $position->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table id="users" class="table table-striped table-bordered" >
                                 <thead>
@@ -118,9 +139,11 @@
                 ajax: {
                     url: "{{ route('users.ajax') }}",
                     type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                    },
+                    data: function (d) {
+                        d._token = '{{ csrf_token() }}'
+                        d.role_id = $('#role_id').val()
+                        d.position_id = $('#position_id').val()
+                    }
                 },
                 columns: [
                     {data: 'id', name: 'id'},
@@ -137,6 +160,13 @@
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();
                 }
             });
+        });
+
+        $('#role_id').on('change', function () {
+            table.draw();
+        });
+        $('#position_id').on('change', function () {
+            table.draw();
         });
 
         $(document.body).on('click', '.change-password', function () {

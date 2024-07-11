@@ -44,6 +44,7 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">დასახელება</th>
+                                    <th scope="col">მოქმედება</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -53,6 +54,7 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">დასახელება</th>
+                                    <th scope="col">მოქმედება</th>
                                 </tr>
                                 </tfoot>
                             </table>
@@ -120,6 +122,7 @@
                 columns: [
                     {data: 'id', name: 'id'},
                     {data: 'title', name: 'title'},
+                    {data: 'action', name: 'action'},
                 ],
                 createdRow: function (row, data, index) {
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();
@@ -128,6 +131,7 @@
         });
 
         $(document.body).on('click', '#add_position', function () {
+            $('#modal_title').html('პოზიციის დამატება')
             $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded
             $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> @lang('wait')...</h3>');
             $.ajax({
@@ -146,6 +150,34 @@
                     }
                     else {
                         $('.htmlDisplay').html('<h3 align=center class=text-danger><i class="fa fa-spin fa-spinner"></i> ამანათზე ინფორმაცია ვერ მოიძებნა!</h3>');
+                    }
+                },
+                error: function () {
+                    alert('შეცდომა, გაიმეორეთ მოქმედება.');
+                }
+            })
+        })
+
+        $(document.body).on('click', '.edit-position', function () {
+            $('#modal_title').html('პოზიციის რედაქტირება')
+            $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded
+            $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> დაელოდეთ...</h3>');
+            let id = $(this).data('id');
+            $.ajax({
+                url: "{{ route('settings.positions.edit') }}",
+                method: "POST",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: $(this).data('id'),
+                },
+                success: function (msg) {
+                    if (msg.status == 0) {
+                        $('.htmlDisplay').html(msg.html);
+                    }else if(msg.status == 2){
+                        $('.htmlDisplay').html(`<h3 align=center class=text-danger>${msg.error}</h3>`);
+                    }
+                    else {
+                        $('.htmlDisplay').html('<h3 align=center class=text-danger><i class="fa fa-spin fa-spinner"></i> შეკვეთაზე ინფორმაცია ვერ მოიძებნა!</h3>');
                     }
                 },
                 error: function () {

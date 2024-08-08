@@ -39,7 +39,9 @@ class PositionController extends Controller
     {
         Position::create([
             'title' => $request->title,
-            'manager_id' => $request->manager_id
+            'manager_id' => $request->manager_id,
+            'helper_manager_id' => $request->helper_manager_id,
+            'helper_id' => $request->helper_id,
         ]);
 
         return jsonResponse(['status' => 0,'msg' => 'პოზიცია წარმატებით დაემატა!']);
@@ -56,7 +58,9 @@ class PositionController extends Controller
     {
         Position::findOrFail($id)->update([
             'title' => $request->title,
-            'manager_id' => $request->manager_id
+            'manager_id' => $request->manager_id,
+            'helper_manager_id' => $request->helper_manager_id,
+            'helper_id' => $request->helper_id,
         ]);
 
         return jsonResponse(['status' => 0,'msg' => 'პოზიცია წარმატებით ჩასწორდა!']);

@@ -142,9 +142,7 @@
                                         <p> თქვენი IP მისამართია: <a
                                                 href="javascript:void(0)" onclick="copyUserIp()" ><span id="user_ip">{{ \request()->ip() }}</span> <span  id="btn_room_num"><i class="ri-file-copy-line"></i></span></a></p>
                                     </div>
-
                                 @endif
-                                <p>{{ getIp() }}</p>
                             </div>
 
                         </div> <!-- .card-->
@@ -251,6 +249,76 @@
                             </div>
                         </div> <!-- .card-->
                     </div> <!-- .col-->
+                    @endif
+                    @if(count($expireContracts))
+                        <div class="col-xl-4">
+                            <div class="card card-height-100">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1">ხელშეკრულებები</h4>
+                                </div><!-- end card header -->
+
+                                <div class="card-body">
+                                    <div class="table-responsive table-card">
+                                        <div data-simplebar="init" style="max-height: 365px;">
+                                            <div class="simplebar-wrapper" style="margin: 0px;">
+                                                <div class="simplebar-height-auto-observer-wrapper">
+                                                    <div class="simplebar-height-auto-observer"></div>
+                                                </div>
+                                                <div class="simplebar-mask">
+                                                    <div class="simplebar-offset" style="right: 0px; bottom: 0px;">
+                                                        <div class="simplebar-content-wrapper" tabindex="0" role="region"
+                                                             aria-label="scrollable content"
+                                                             style="height: auto; overflow: hidden scroll;">
+                                                            <div class="simplebar-content" style="padding: 0px;">
+                                                                <ul class="list-group list-group-flush">
+                                                                    @foreach($expireContracts as $expireContract)
+                                                                        <li class="list-group-item list-group-item-action">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <img
+                                                                                    src="assets/images/users/user-dummy-img.jpg"
+                                                                                    alt=""
+                                                                                    class="avatar-xs object-cover rounded-circle">
+                                                                                <div class="ms-3 flex-grow-1">
+                                                                                    <a href="#!" class="stretched-link">
+                                                                                        <h6 class="fs-14 mb-1">{{ $expireContract->user->full_name }}</h6>
+                                                                                    </a>
+                                                                                    <p class="mb-0 text-muted">{{ $expireContract->company->title }}</p>
+                                                                                </div>
+                                                                                <div>
+                                                                                    @if($expireContract->contract_end_date == \Carbon\Carbon::today())
+                                                                                        <h6>
+                                                                                            დღეს
+                                                                                        </h6>
+                                                                                    @else
+                                                                                        <h6>
+                                                                                            {{ $expireContract->formatted_contract_end_date }}
+                                                                                        </h6>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
+                                                                        </li>
+                                                                    @endforeach
+
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="simplebar-placeholder"
+                                                     style="width: auto; height: 200px;"></div>
+                                            </div>
+                                            <div class="simplebar-track simplebar-horizontal" style="visibility: hidden;">
+                                                <div class="simplebar-scrollbar" style="width: 0px; display: none;"></div>
+                                            </div>
+                                            <div class="simplebar-track simplebar-vertical" style="visibility: visible;">
+                                                <div class="simplebar-scrollbar"
+                                                     style="height: 299px; transform: translate3d(0px, 65px, 0px); display: block;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- .card-->
+                        </div> <!-- .col-->
                     @endif
                 </div>
 

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ContactType;
 use App\Services\HonorableReasonService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,9 +32,52 @@ class UserCompany extends Model
         return $this->hasMany(DynamicWorkingSchedule::class,'user_id','user_id');
     }
 
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function formattedContractDate(): Attribute
+    {
+        $contractDate = '';
+        if($this->contract_date){
+            $contractDate = Carbon::parse($this->contract_date)->format('d.m.Y');
+        }
+        return new Attribute(
+            get: fn() => $contractDate
+        );
+    }
+
+    public function formattedContractEndDate(): Attribute
+    {
+        $contractEndDate = '';
+        if($this->contract_end_date){
+            $contractEndDate = Carbon::parse($this->contract_end_date)->format('d.m.Y');
+        }
+        return new Attribute(
+            get: fn() => $contractEndDate
+        );
+    }
+
+    public function formattedContractType(): Attribute
+    {
+        $contractType = '';
+        if($this->contract_type_id){
+            $contractType = ContactType::getData($this->contract_type_id);
+        }
+        return new Attribute(
+            get: fn() => $contractType
+        );
     }
 
     public function getWorkedHoursByDay($year, $month)

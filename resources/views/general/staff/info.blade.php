@@ -1,7 +1,13 @@
 <div class="card-body">
     <ul class="nav nav-pills animation-nav nav-justified gap-2 mb-3" role="tablist">
+
         <li class="nav-item waves-effect waves-light" role="presentation">
-            <a class="nav-link active" data-bs-toggle="tab" href="#animation-home" role="tab" aria-selected="true">
+            <a class="nav-link active" data-bs-toggle="tab" href="#animation-user-info" role="tab" aria-selected="true">
+                ინფორმაცია
+            </a>
+        </li>
+        <li class="nav-item waves-effect waves-light" role="presentation">
+            <a class="nav-link" data-bs-toggle="tab" href="#animation-home" role="tab" aria-selected="false" tabindex="-1">
                 @lang('movements')
             </a>
         </li>
@@ -27,7 +33,73 @@
 {{--        </li>--}}
     </ul>
     <div class="tab-content text-muted">
-        <div class="tab-pane active show" id="animation-home" role="tabpanel">
+        <div class="tab-pane active show" id="animation-user-info" role="tabpanel">
+            <div class="row">
+                <div class="col-xxl-6 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">ზოგადი ინფორმაცია</h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <th class="ps-0" scope="row">სახელი, გვარი:</th>
+                                        <td class="text-muted">{{ $user->full_name }} - {{ $user->full_name_en }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">მობილური:</th>
+                                        <td class="text-muted">{{ $user->tel }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">პირადი ნომერი:</th>
+                                        <td class="text-muted">{{ $user->personal_num }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">ელ. ფოსტა:</th>
+                                        <td class="text-muted">{{ $user->email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">მისამართი:</th>
+                                        <td class="text-muted">{{ $user->address }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">დაბადების თარიღი:</th>
+                                        <td class="text-muted">{{ $user->formatted_birthdate }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- end card body -->
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-0">კომპანიები</h5>
+                                </div>
+                            </div>
+                            <div>
+                                @foreach($user->user_companies as $userCompany)
+                                    <div class="d-flex align-items-center py-3">
+                                        <div class="flex-grow-1">
+                                            <div>
+                                                <h5 class="fs-14 mb-1">{{ $userCompany->company->title }}</h5>
+                                                <p class="fs-13 text-muted mb-0">{{ $userCompany->position->title }} {{ $userCompany->formatted_contract_date }} - {{ $userCompany->formatted_contract_end_date }}</p>
+                                                <p class="fs-13 text-muted mb-0">{{ $userCompany->formatted_contract_type }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div><!-- end card body -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="animation-home" role="tabpanel">
             <div class="d-flex">
                 <div class="flex-grow-1 ms-2">
                     <div class="mt-3">

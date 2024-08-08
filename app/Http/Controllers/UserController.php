@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ContactType;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Company;
+use App\Models\Country;
+use App\Models\Department;
 use App\Models\Movement;
 use App\Models\Position;
 use App\Models\Sold;
@@ -46,8 +49,9 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $positions = Position::all();
+        $departments = Department::all();
         $roles = Role::where('name','!=','System Administrator')->get();
-        return view('pages.users.index',compact('positions','roles'));
+        return view('pages.users.index',compact('positions','departments','roles'));
     }
 
     public function changePassword()
@@ -183,6 +187,13 @@ class UserController extends Controller
         }
         return Datatables()->of($users)
             ->addIndexColumn()
+            ->addColumn('company_title_position', function ($data) {
+                $html = '';
+                foreach ($data->user_companies as $userCompany){
+                    $html.= 'კომპანია: '.$userCompany->company->title.' - '.$userCompany->position->title.'<br>';
+                }
+                return $html;
+            })
             ->addColumn('active_status', function ($data) {
                 $html = '';
                 if ($data->status == 1) {
@@ -194,10 +205,11 @@ class UserController extends Controller
             })
             ->addColumn('action', function ($data) {
                 $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
-                $html = $html.= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="'.route('users.edit',$data->id).'"><i class="fa fa-edit"></i></a>';
+                $html .= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
                 return $html;
             })
-            ->rawColumns(['role', 'action', 'active_status'])
+            ->rawColumns(['role', 'action', 'active_status','company_title_position'])
             ->make(true);
 
     }
@@ -318,10 +330,23 @@ class UserController extends Controller
         $workingSchedules = WorkingSchedule::all();
         $positions = Position::all();
         $roles = Role::where('name','!=','System Administrator')->get();
-        return jsonResponse(['html' => view('general.users.create',compact('companies','workingSchedules','positions','roles'))->render(),'status' => 0]);
+        $contractTypes = ContactType::all();
+        return jsonResponse(['html' => view('general.users.create',compact('companies','workingSchedules','positions','roles','contractTypes'))->render(),'status' => 0]);
     }
 
-    public function store(StoreUserRequest $request, UserService $userService)
+    public function create(): View
+    {
+        $companies = Company::all();
+        $workingSchedules = WorkingSchedule::all();
+        $positions = Position::all();
+        $roles = Role::where('name','!=','System Administrator')->get();
+        $contractTypes = ContactType::all();
+        $departments = Department::all();
+        $countries = Country::all();
+        return view('pages.users.create',compact('companies','workingSchedules','positions','departments','roles','contractTypes','countries'));
+    }
+
+    public function store(StoreUserRequest $request, UserService $userService): JsonResponse
     {
         $input = $request->all();
         $input['password'] = Hash::make('password');
@@ -336,7 +361,11 @@ class UserController extends Controller
                 $user->user_companies()->create([
                     'company_id' => $request->post('company_ids')[$i],
                     'working_schedule_id' => $request->post('working_schedule_ids')[$i],
-                    'position_id' => isset($request->post('position_ids')[$i]) ? $request->post('position_ids')[$i] : null
+                    'department_id' => isset($request->post('department_ids')[$i]) ? $request->post('department_ids')[$i] : null,
+                    'position_id' => isset($request->post('position_ids')[$i]) ? $request->post('position_ids')[$i] : null,
+                    'contract_date' => isset($request->post('contract_dates')[$i]) ? Carbon::parse($request->post('contract_dates')[$i])->format('Y-m-d') : null,
+                    'contract_end_date' => isset($request->post('contact_end_dates')[$i]) ? Carbon::parse($request->post('contact_end_dates')[$i])->format('Y-m-d') : null,
+                    'contract_type_id' => isset($request->post('contact_types')[$i]) ? $request->post('contact_types')[$i] : null
                 ]);
             }
         }
@@ -356,8 +385,13 @@ class UserController extends Controller
         $user = User::find($id);
         $roles = Role::pluck('name', 'name')->all();
         $userRole = $user->roles->pluck('name', 'name')->all();
-
-        return view('pages.staff_info.blade.edit', compact('user', 'roles', 'userRole'));
+        $companies = Company::all();
+        $workingSchedules = WorkingSchedule::all();
+        $positions = Position::all();
+        $contractTypes = ContactType::all();
+        $departments = Department::all();
+        $countries = Country::all();
+        return view('pages.users.edit', compact('user', 'roles', 'userRole','companies','workingSchedules','positions','departments','contractTypes','countries'));
     }
 
     public function getUserById($id)
@@ -366,7 +400,7 @@ class UserController extends Controller
         return $user;
     }
 
-    public function update(UpdateUserRequest $request)
+    public function update(UpdateUserRequest $request,$id)
     {
         $input = $request->all();
         if (!empty($input['password'])) {
@@ -376,13 +410,24 @@ class UserController extends Controller
         }
         $input['tel'] = str_replace(' ','',$request->tel);
         $input['birthdate'] = Carbon::parse($input['birthdate'])->format('Y-m-d');
-        $user = User::find($request->id);
+        $user = User::find($id);
         $user->update($input);
         DB::table('model_has_roles')->where('model_id', $request->id)->delete();
-
+        if($request->company_ids){
+            for ($i = 0; $i < count($request->company_ids); $i++) {
+                $user->user_companies()->create([
+                    'company_id' => $request->post('company_ids')[$i],
+                    'working_schedule_id' => $request->post('working_schedule_ids')[$i],
+                    'department_id' => isset($request->post('department_ids')[$i]) ? $request->post('department_ids')[$i] : null,
+                    'position_id' => isset($request->post('position_ids')[$i]) ? $request->post('position_ids')[$i] : null,
+                    'contract_date' => isset($request->post('contract_dates')[$i]) ? Carbon::parse($request->post('contract_dates')[$i])->format('Y-m-d') : null,
+                    'contract_end_date' => isset($request->post('contact_end_dates')[$i]) ? Carbon::parse($request->post('contact_end_dates')[$i])->format('Y-m-d') : null,
+                    'contract_type_id' => isset($request->post('contact_types')[$i]) ? $request->post('contact_types')[$i] : null
+                ]);
+            }
+        }
         $user->assignRole($request->input('roles'));
-
-        return jsonResponse(['status' => 0,'msg' => 'თანამშრომლის ინფორმაცია წარმატებით განახლდა']);
+        return redirect()->to(route('users.index'))->with('success','თანამშრომლის ინფორმაცია წარმატებით განახლდა!');
     }
 
     public function statusAction(Request $request)
@@ -394,6 +439,23 @@ class UserController extends Controller
         } catch (\Exception $exception) {
             return jsonResponse(['status' => 0]);
         }
+    }
+
+    public function editUserCompany(Request $request)
+    {
+        $userCompany = UserCompany::findOrFail($request->id);
+        $companies = Company::all();
+        $workingSchedules = WorkingSchedule::all();
+        $positions = Position::all();
+        $contractTypes = ContactType::all();
+        $departments = Department::all();
+        return jsonResponse(['status' => 0,'html' =>view('general.users.edit_user_company',compact('userCompany','companies','workingSchedules','positions','departments','contractTypes'))->render()]);
+    }
+
+    public function updateUserCompany(Request $request,$id)
+    {
+        UserCompany::findOrFail($id)->update($request->all());
+        return jsonResponse(['status' => 0]);
     }
 
     public function deleteUser(Request $request)

@@ -129,6 +129,10 @@ Route::get('/', function () {
     return view('auth.login');
 })->name('index');
 
+Route::get('/test_img', function (){
+    return view('pages.canvas');
+});
+
 Route::get('/export', function (){
 
      return Excel::download(new \App\Exports\DynamicWorkingScheduleExport(), 'vacation-' . date('d.m.Y') . '.xlsx');
@@ -218,7 +222,9 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => 'departments','as' => 'departments.'], function (){
                 Route::get('/',[DepartmentController::class,'index'])->name('index');
                 Route::post('/create',[DepartmentController::class,'create'])->name('create');
+                Route::post('/edit',[DepartmentController::class,'edit'])->name('edit');
                 Route::post('/store',[DepartmentController::class,'store'])->name('store');
+                Route::post('/update/{id}',[DepartmentController::class,'update'])->name('update');
                 Route::post('/ajax',[DepartmentController::class,'ajax'])->name('ajax');
             });
 
@@ -301,9 +307,9 @@ Route::middleware(['auth'])->group(function () {
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
             Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
-            Route::post('/update', [UserController::class, 'update'])->name('update');
+            Route::post('/{id}/update', [UserController::class, 'update'])->name('update');
             Route::get('/{id}/show', [UserController::class, 'show']);
-            Route::get('/create', [UserController::class, 'create']);
+            Route::get('/create', [UserController::class, 'create'])->name('create');
             Route::post('/create_render', [UserController::class, 'createRender'])->name('create.render');
             Route::post('/store', [UserController::class, 'store'])->name('store');
             Route::post('/users_ajax', [UserController::class, 'getUsersForAjax'])->name('ajax');
@@ -316,6 +322,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/upload_files/{id}', [UserController::class, 'uploadFiles'])->name('upload.files');
             Route::post('/save_vacation_days/{id}', [UserController::class, 'saveVacationDays'])->name('save.vacation.days');
             Route::get('/download_file/{id}', [UserController::class, 'downloadFile'])->name('download.file');
+            Route::post('/edit_user_company', [UserController::class, 'editUserCompany'])->name('edit.user.company');
+            Route::post('/update_user_company/{id}', [UserController::class, 'updateUserCompany'])->name('update.user.company');
 
 
             Route::post('/reset_password',[UserController::class,'resetPassword'])->name('reset.password');

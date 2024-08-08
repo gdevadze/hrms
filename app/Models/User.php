@@ -29,6 +29,7 @@ class User extends Authenticatable
         'surname_ka',
         'name_en',
         'surname_en',
+        'address',
         'tel',
         'personal_num',
         'email',
@@ -37,6 +38,8 @@ class User extends Authenticatable
         'card_number',
         'birthdate',
         'company_id',
+        'is_resident',
+        'country_id',
         'position_id'
     ];
 

@@ -19,16 +19,20 @@ class DepartmentController extends Controller
         return jsonResponse(['status' => 0,'title' => 'დეპარტამენტის დამატება','html' =>view('general.departments.create')->render()]);
     }
 
+    public function edit(Request $request): JsonResponse
+    {
+        $department = Department::findOrFail($request->id);
+        return jsonResponse(['status' => 0,'title' => 'დეპარტამენტის რედაქტირება','html' =>view('general.departments.edit',compact('department'))->render()]);
+    }
+
     public function ajax(): JsonResponse
     {
         return Datatables()->of(Department::query())
             ->addIndexColumn()
             ->addColumn('action', function ($data) {
                 $html = '';
-                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"  href="'.route('vacations.pdf',$data->id).'" target="_blank"><i class="fa fa-file-pdf-o"></i></a>';
-                if ($data->status != 2){
-                    $html .= ' <a class="btn btn-soft-success waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('confirm').'" onclick="confirmHonorableReason('.$data->id.')" href="javascript:void(0)"><i class="fa fa-check"></i></a>';
-                }
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light edit_department" data-bs-toggle="tooltip" data-id="'.$data->id.'" data-bs-placement="top" title="რედაქტირება"  href="javascript:void(0)"><i class="fa fa-edit"></i></a>';
+
                 return $html;
             })
             ->rawColumns(['role', 'action', 'formatted_status'])
@@ -43,5 +47,14 @@ class DepartmentController extends Controller
         ]);
 
         return jsonResponse(['status' => 0,'msg' => 'დეპარტამენტი წარმატებით დაემატა!']);
+    }
+
+    public function update(Request $request,$id): JsonResponse
+    {
+        Department::findOrfail($id)->update([
+            'title' => $request->title,
+        ]);
+
+        return jsonResponse(['status' => 0,'msg' => 'დეპარტამენტი წარმატებით განახლდა!']);
     }
 }

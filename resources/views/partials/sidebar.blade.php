@@ -130,10 +130,10 @@
                                 <a href="{{ route('settings.general.index') }}" class="nav-link"
                                    data-key="t-analytics">ზოგადი პარამეტრები</a>
                             </li>
-{{--                            <li class="nav-item">--}}
-{{--                                <a href="{{ route('settings.departments.index') }}" class="nav-link"--}}
-{{--                                   data-key="t-analytics">დეპარტამენტები</a>--}}
-{{--                            </li>--}}
+                            <li class="nav-item">
+                                <a href="{{ route('settings.departments.index') }}" class="nav-link"
+                                   data-key="t-analytics">დეპარტამენტები</a>
+                            </li>
                             <li class="nav-item">
                                 <a href="{{ route('settings.positions.index') }}" class="nav-link"
                                    data-key="t-analytics">პოზიციები</a>

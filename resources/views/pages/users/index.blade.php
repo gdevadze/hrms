@@ -32,7 +32,7 @@
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">@lang('employees')</h4>
                         <div class="flex-shrink-0">
-                            <a type="button" class="btn btn-primary waves-effect waves-light" id="add_user" href="javascript:void(0)"><i class="fa fa-plus-square-o"></i> @lang('add')</a>
+                            <a type="button" class="btn btn-primary waves-effect waves-light" href="{{ route('users.create') }}"><i class="fa fa-plus-square-o"></i> @lang('add')</a>
                         </div>
                     </div><!-- end card header -->
                     <div class="card-body">
@@ -64,7 +64,8 @@
                                     <th scope="col">#</th>
                                     <th scope="col">@lang('full_name')</th>
                                     <th scope="col">@lang('phone')</th>
-                                    <th scope="col">@lang('email')</th>
+                                    <th scope="col">@lang('personal_number')</th>
+                                    <th scope="col">@lang('company_title_position')</th>
                                     <th scope="col">@lang('action')</th>
                                 </tr>
                                 </thead>
@@ -76,8 +77,8 @@
                                     <th scope="col">#</th>
                                     <th scope="col">@lang('full_name')</th>
                                     <th scope="col">@lang('phone')</th>
-                                    <th scope="col">@lang('email')</th>
-{{--                                    <th scope="col">როლი</th>--}}
+                                    <th scope="col">@lang('personal_number')</th>
+                                    <th scope="col">@lang('company_title_position')</th>
                                     <th scope="col">@lang('action')</th>
                                 </tr>
                                 </tfoot>
@@ -150,7 +151,7 @@
                     {data: 'full_name', name: 'name_ka'},
                     {data: 'tel', name: 'tel'},
                     {data: 'personal_num', name: 'personal_num'},
-                    // {data: 'active_status', name: 'active_status'},
+                    {data: 'company_title_position', name: 'company_title_position'},
                     {data: 'action', name: 'action'},
                     {data: 'name_en', name: 'name_en', visible: false},
                     {data: 'surname_ka', name: 'surname_ka', visible: false},

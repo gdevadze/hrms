@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\VacationType;
 use App\Models\Holiday;
+use App\Models\UserCompany;
 use App\Models\Vacation;
 use App\Models\Movement;
 use App\Models\User;
@@ -57,6 +58,9 @@ class HomeController extends Controller
         $whitelist = file_get_contents(public_path('whitelist.json'));
         $jsonArr = json_decode($whitelist, true);
         $ipCollection = collect($jsonArr)->pluck('ip')->toArray();
-        return view('dashboard',compact('users','holidays','currentDayName','todayMovement','userVacation','usedUserVacations','todayMovements','birthdays','ipCollection'));
+
+        $expireContracts =  UserCompany::where('contract_end_date', '<=', Carbon::today()->addWeek())->get();
+
+        return view('dashboard',compact('users','holidays','currentDayName','todayMovement','userVacation','expireContracts','usedUserVacations','todayMovements','birthdays','ipCollection'));
     }
 }

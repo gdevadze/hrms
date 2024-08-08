@@ -120,6 +120,31 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-xxl-4 col-md-6">
+                        <div>
+                            <label for="contract_dates_1" class="form-label">ხელშეკრულების დაწყების თარიღი</label>
+                            <input type="text" class="form-control flatpickr-input" name="contract_dates[]" id="contract_dates_1" data-provider="flatpickr" data-date-format="d.m.Y" readonly="readonly">
+                            <span class="text-danger errors contract_dates_err"></span>
+                        </div>
+                    </div>
+                    <div class="col-xxl-4 col-md-6">
+                        <div>
+                            <label for="contact_end_dates_1" class="form-label">ხელშეკრულების დასრულების თარიღი</label>
+                            <input type="text" class="form-control flatpickr-input" name="contact_end_dates[]" id="contact_end_dates_1" data-provider="flatpickr" data-date-format="d.m.Y" readonly="readonly">
+                            <span class="text-danger errors contact_end_dates_err"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="contact_types_1">ხელშეკრულების ტიპი</label>
+                            <select name="contact_types[]" id="contact_types_1" class="form-control">
+                                <option selected disabled>აირჩიეთ</option>
+                                @foreach($contractTypes as $contractType)
+                                    <option value="{{ $contractType['key'] }}">{{ $contractType['title'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,6 +191,15 @@
         newdiv.find("#position_id_" + nid).attr("for", "position_id_" + newId);
         newdiv.find("#working_schedule_id_" + nid).attr("id", "working_schedule_id_" + newId);
         newdiv.find("#working_schedule_id_" + nid).attr("for", "working_schedule_id_" + newId);
+
+        newdiv.find("#contract_dates_" + nid).attr("id", "contract_dates_" + newId);
+        newdiv.find("#contract_dates_" + nid).attr("for", "contract_dates_" + newId);
+
+        newdiv.find("#contact_end_dates_" + nid).attr("id", "contact_end_dates_" + newId);
+        newdiv.find("#contact_end_dates_" + nid).attr("for", "contact_end_dates_" + newId);
+
+        newdiv.find("#contact_types_" + nid).attr("id", "contact_types_" + newId);
+        newdiv.find("#contact_types_" + nid).attr("for", "contact_types_" + newId);
 
         newdiv.find("#gan").html(newId);
         newdiv.find("input").val("");

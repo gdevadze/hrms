@@ -29,6 +29,7 @@ class StoreUserRequest extends FormRequest
             'name_en' => 'required',
             'surname_en' => 'required',
             'tel' => 'required',
+            'address' => 'required',
             'email' => '',
             'personal_num' => 'required|unique:users,personal_num',
             'birthdate' => 'required',

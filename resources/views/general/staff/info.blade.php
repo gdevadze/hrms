@@ -67,6 +67,15 @@
                                         <th class="ps-0" scope="row">დაბადების თარიღი:</th>
                                         <td class="text-muted">{{ $user->formatted_birthdate }}</td>
                                     </tr>
+
+                                    <tr>
+                                        <th class="ps-0" scope="row">რეზიდენტი:</th>
+                                        <td class="text-muted">@if($user->is_resident) კი @else არა @endif</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="ps-0" scope="row">ქვეყანა:</th>
+                                        <td class="text-muted">{{ $user->country->name_ka ?? '' }}</td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </div>

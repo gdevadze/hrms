@@ -102,6 +102,11 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class);
     }
 
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
     public function fullName(): Attribute
     {
         $fullName = $this->name_ka.' '.$this->surname_ka;

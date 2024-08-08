@@ -37,7 +37,7 @@
                     </div><!-- end card header -->
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
                                 <strong>პროგრამაზე დაშვება</strong>
                                 <select class="form-control" id="role_id">
                                     <option value="">აირჩიეთ</option>
@@ -46,8 +46,16 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
+                                <strong>დეპარტამენტი</strong>
+                                <select class="form-control" id="department_id">
+                                    <option selected value="">აირჩიეთ</option>
+                                    @foreach($departments as $department)
+                                        <option value="{{ $department->id }}">{{ $department->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
                                 <strong>პოზიცია</strong>
                                 <select class="form-control" id="position_id">
                                     <option selected value="">აირჩიეთ</option>
@@ -144,6 +152,7 @@
                         d._token = '{{ csrf_token() }}'
                         d.role_id = $('#role_id').val()
                         d.position_id = $('#position_id').val()
+                        d.department_id = $('#department_id').val()
                     }
                 },
                 columns: [
@@ -167,6 +176,10 @@
             table.draw();
         });
         $('#position_id').on('change', function () {
+            table.draw();
+        });
+
+        $('#department_id').on('change', function () {
             table.draw();
         });
 

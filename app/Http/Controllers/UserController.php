@@ -180,6 +180,11 @@ class UserController extends Controller
         if($request->role_id){
             $users = $users->role($request->role_id);
         }
+        if($request->department_id){
+            $users = $users->whereHas('user_companies', function ($q) use($request){
+                return $q->where('department_id',$request->department_id);
+            });
+        }
         if($request->position_id){
             $users = $users->whereHas('user_companies', function ($q) use($request){
                 return $q->where('position_id',$request->position_id);

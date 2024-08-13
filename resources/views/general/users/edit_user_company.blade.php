@@ -49,14 +49,14 @@
     <div class="col-xxl-4 col-md-6">
         <div>
             <label for="contract_dates_1" class="form-label">ხელშეკრულების დაწყების თარიღი</label>
-            <input type="date" class="form-control " name="contract_date" value="{{ $userCompany->contract_date }}" id="contract_dates_1" >
+            <input type="text" class="form-control flatpickr-input" name="contract_date" value="{{ $userCompany->formatted_contract_date }}" data-provider="flatpickr" data-date-format="d.m.Y" readonly="readonly" id="contract_dates_1" >
             <span class="text-danger errors contract_dates_err"></span>
         </div>
     </div>
     <div class="col-xxl-4 col-md-6">
         <div>
             <label for="contact_end_dates_1" class="form-label">ხელშეკრულების დასრულების თარიღი</label>
-            <input type="date" class="form-control " name="contract_end_date" value="{{ $userCompany->contract_end_date }}" id="contact_end_dates_1">
+            <input type="text" class="form-control flatpickr-input" name="contract_end_date" value="{{ $userCompany->formatted_contract_end_date }}" data-provider="flatpickr" data-date-format="d.m.Y" readonly="readonly" id="contact_end_dates_1">
             <span class="text-danger errors contact_end_dates_err"></span>
         </div>
     </div>
@@ -76,3 +76,9 @@
     <a type="button" class="btn btn-primary waves-effect waves-light save-btn" data-link="{{ route('users.update.user.company',$userCompany->id) }}" href="javascript:void(0)">@lang('save')</a>
 </div>
 </form>
+
+<script>
+    flatpickr('.flatpickr-input', {
+        allowInput: true,
+    });
+</script>

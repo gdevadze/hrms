@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\Position;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -17,8 +18,9 @@ class PositionController extends Controller
 
     public function create(): JsonResponse
     {
+        $departments = Department::all();
         $users = User::role(3)->get();
-        return jsonResponse(['status' => 0,'title' => 'პოზიციის დამატება','html' =>view('general.positions.create',compact('users'))->render()]);
+        return jsonResponse(['status' => 0,'title' => 'პოზიციის დამატება','html' =>view('general.positions.create',compact('users','departments'))->render()]);
     }
 
     public function ajax(): JsonResponse
@@ -38,6 +40,7 @@ class PositionController extends Controller
     public function store(Request $request): JsonResponse
     {
         Position::create([
+            'department_id' => $request->department_id,
             'title' => $request->title,
             'manager_id' => $request->manager_id,
             'helper_manager_id' => $request->helper_manager_id,
@@ -50,13 +53,15 @@ class PositionController extends Controller
     public function edit(Request $request)
     {
         $position = Position::findOrFail($request->id);
+        $departments = Department::all();
         $users = User::role(3)->get();
-        return jsonResponse(['status' => 0,'html' => view('general.positions.edit',compact('position','users'))->render()]);
+        return jsonResponse(['status' => 0,'html' => view('general.positions.edit',compact('position','users','departments'))->render()]);
     }
 
     public function update(Request $request,$id): JsonResponse
     {
         Position::findOrFail($id)->update([
+            'department_id' => $request->department_id,
             'title' => $request->title,
             'manager_id' => $request->manager_id,
             'helper_manager_id' => $request->helper_manager_id,

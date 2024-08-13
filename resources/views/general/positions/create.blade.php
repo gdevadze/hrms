@@ -2,6 +2,16 @@
     @csrf
     <div class="row">
         <div class="col-xxl-12 col-md-12">
+            <label for="basiInput" class="form-label">დეპარტამენტი</label>
+            <select class="form-control" name="department_id">
+                <option selected value="">აირჩიეთ</option>
+                @foreach($departments as $department)
+                    <option value="{{ $department->id }}">{{ $department->title }}</option>
+                @endforeach
+            </select>
+            <span class="text-danger errors department_id_err"></span>
+        </div>
+        <div class="col-xxl-12 col-md-12">
             <label for="basiInput" class="form-label">დასახელება</label>
             <input type="text" class="form-control flatpickr-input" name="title">
             <span class="text-danger errors title_err"></span>

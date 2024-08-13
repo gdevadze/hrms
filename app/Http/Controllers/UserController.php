@@ -459,7 +459,10 @@ class UserController extends Controller
 
     public function updateUserCompany(Request $request,$id)
     {
-        UserCompany::findOrFail($id)->update($request->all());
+        $data = $request->all();
+        $data['contract_date'] = Carbon::parse($request->contract_date)->format('Y-m-d');
+        $data['contract_end_date'] = Carbon::parse($request->contract_end_date)->format('Y-m-d');
+        UserCompany::findOrFail($id)->update($data);
         return jsonResponse(['status' => 0]);
     }
 

@@ -41,9 +41,17 @@ use Rats\Zkteco\Lib\ZKTeco;
 |
 */
 
-Route::get('/zktec', function (\App\Services\ZKTecoService $ZKTecoService){
-    $zk = new ZktecoLib('212.72.131.20','4370');
-    $zk->connect();
+Route::get('/zktec', function (\App\Services\ZKTService $ZKTService){
+    $loggedIn = $ZKTService->login('your_username', 'your_password');
+
+    if ($loggedIn) {
+        // Fetch attendance data after successful login
+        $attendanceData = $ZKTService->getAttendanceData('2024-08-01', '2024-08-31');
+        return $attendanceData;
+        return view('attendance.index', compact('attendanceData'));
+    } else {
+        return response()->json(['error' => 'Login failed'], 401);
+    }
 //    $user = User::findOrFail(1);
 //    $weekDays = $user->working_schedule?->week_days;
 //    $monthDaysCount = cal_days_in_month(CAL_GREGORIAN, 03, 2024);
@@ -235,6 +243,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/ajax',[PositionController::class,'ajax'])->name('ajax');
                 Route::post('/edit',[PositionController::class,'edit'])->name('edit');
                 Route::post('/update/{id}',[PositionController::class,'update'])->name('update');
+                Route::post('/delete_position',[PositionController::class,'deletePosition'])->name('delete.position');
             });
 
             Route::group(['prefix' => 'readers', 'as' => 'readers.'], function (){
@@ -327,6 +336,7 @@ Route::middleware(['auth'])->group(function () {
 
 
             Route::post('/reset_password',[UserController::class,'resetPassword'])->name('reset.password');
+            Route::post('/account_disable',[UserController::class,'accountDisable'])->name('account.disable');
 
             Route::get('/delays',[UserController::class,'delays'])->name('delays');
             Route::post('/delays_ajax',[UserController::class,'delaysAjax'])->name('delays.ajax');

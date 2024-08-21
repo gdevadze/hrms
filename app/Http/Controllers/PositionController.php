@@ -30,6 +30,9 @@ class PositionController extends Controller
             ->addColumn('action', function ($data) {
                 $html = '';
                 $html .= ' <a class="btn btn-primary shadow btn-xs sharp mr-1 edit-position" data-id="'.$data->id.'" href="javascript:void(0)"><i class="fa fa-edit"></i></a>';
+                if ($data->user_companies()->count() == 0){
+                    $html .= ' <a class="btn btn-danger shadow btn-xs sharp mr-1" onclick="deletePosition('.$data->id.')" href="javascript:void(0)"><i class="fa fa-trash"></i></a>';
+                }
                 return $html;
             })
             ->rawColumns(['role', 'action', 'formatted_status'])
@@ -69,5 +72,19 @@ class PositionController extends Controller
         ]);
 
         return jsonResponse(['status' => 0,'msg' => 'პოზიცია წარმატებით ჩასწორდა!']);
+    }
+
+    public function deletePosition(Request $request)
+    {
+        try {
+            $position = Position::findOrFail($request->id);
+            if($position->user_companies()->count() > 0){
+                return jsonResponse(['status' => 2]);
+            }
+            $position->delete();
+            return jsonResponse(['status' => 1]);
+        } catch (\Exception $exception) {
+            return jsonResponse(['status' => 0]);
+        }
     }
 }

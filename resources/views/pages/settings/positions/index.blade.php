@@ -221,6 +221,47 @@
             table.ajax.reload();
         }
 
+        function deletePosition(id) {
+            Swal.fire({
+                title: 'ნამდვილად გსურთ პოზიციის წაშლა?',
+                text: "",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'დიახ!',
+                cancelButtonText: 'არა!',
+                preConfirm: function () {
+                    return new Promise(function (resolve) {
+                        $('.swal2-confirm').html('<i class="fa fa-spinner fa-spin mr-1"></i>');
+                        $.ajax({
+                            url: "{{ route('settings.positions.delete.position') }}",
+                            type: "POST",
+                            dataType: "JSON",
+                            data: {
+                                '_token': '{{ csrf_token() }}',
+                                'id': id
+                            },
+                        })
+                            .done(function (response) {
+                                if (response.status === 1) {
+                                    Swal.fire('წარმატებული','პოზიცია წარმატებით წაიშალა!','success');
+                                    reload();
+                                }else if(response.status == 2){
+                                    Swal.fire('შეცდომა','პოზიცია მითითებულია თანამშრომლებზე და წაშლა შეუძლებელია','warning');
+                                }
+                                else {
+                                    Swal.fire('შეცდომა!', 'სცადეთ მოგვიანებით', 'error');
+                                }
+                            })
+                            .fail(function () {
+                                Swal.fire('შეცდომა!', 'სცადეთ მოგვიანებით', 'error');
+                            });
+                    });
+                },
+                allowOutsideClick: true
+            });
+        }
     </script>
 
 @endpush

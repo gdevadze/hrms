@@ -229,6 +229,52 @@
             });
         })
 
+        $(document.body).on('click', '.account-disable', function () {
+            let userId = $(this).data('id');
+            Swal.fire({
+                title: 'ნამდვილად გსურთ პროფილის გაუქმება?',
+                text: "",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'დიახ!',
+                cancelButtonText: 'არა!',
+                preConfirm: function () {
+                    return new Promise(function (resolve) {
+                        $('.swal2-confirm').html('<i class="fa fa-spinner fa-spin mr-1"></i>');
+                        $.ajax({
+                            url: "{{ route('users.account.disable') }}",
+                            type: "POST",
+                            dataType: "JSON",
+                            data: {
+                                '_token': '{{ csrf_token() }}',
+                                'id': userId
+                            },
+                        })
+                            .done(function (response) {
+                                if (response.status === 1) {
+                                    Swal.fire({
+                                        title: 'წარმატებული!',
+                                        text: "პროფილი წარმატებით გაუქმდა",
+                                        icon: 'success',
+                                        showCancelButton: false
+                                    }).then((result) => {
+                                        reload()
+                                    })
+                                } else {
+                                    Swal.fire('შეცდომა!', 'სცადეთ მოგვიანებით', 'error');
+                                }
+                            })
+                            .fail(function () {
+                                Swal.fire('შეცდომა!', 'სცადეთ მოგვიანებით', 'error');
+                            });
+                    });
+                },
+                allowOutsideClick: true
+            });
+        })
+
         $(document.body).on('click', '#add_user', function () {
             $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded
             $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> @lang('wait')...</h3>');

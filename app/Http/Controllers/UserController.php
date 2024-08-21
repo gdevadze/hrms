@@ -21,14 +21,10 @@ use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Psy\VersionUpdater\Downloader\FileDownloader;
 use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Arr;
@@ -85,6 +81,13 @@ class UserController extends Controller
         $newPassword = Hash::make($password);
         $user->update(['password' => $newPassword]);
         return \jsonResponse(['status' => 1,'password' => $password]);
+    }
+
+    public function accountDisable(Request $request): JsonResponse
+    {
+        $user = User::findOrFail($request->id);
+        $user->user_companies()->update(['status' => 0]);
+        return \jsonResponse(['status' => 1]);
     }
 
     public function uploadFiles(Request $request,$id): JsonResponse
@@ -212,6 +215,9 @@ class UserController extends Controller
                 $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
                 $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="'.route('users.edit',$data->id).'"><i class="fa fa-edit"></i></a>';
                 $html .= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
+                if($data->user_companies()->where('status',1)->count() > 0){
+                    $html.= ' <a class="btn btn-soft-danger waves-effect waves-light account-disable" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პროფილის გაუქმება" href="javascript:void(0)"><i class="fa fa-ban"></i></a>';
+                }
                 return $html;
             })
             ->rawColumns(['role', 'action', 'active_status','company_title_position'])

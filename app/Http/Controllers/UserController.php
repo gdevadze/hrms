@@ -20,6 +20,7 @@ use App\Services\Contracts\WorkSchedulingServiceContract;
 use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -363,7 +364,6 @@ class UserController extends Controller
         $input['password'] = Hash::make('password');
         $input['working_schedule_id'] = $request->working_schedule_ids[0];
         $input['company_id'] = $request->company_ids[0];
-        $input['card_number'] = $userService->generateNumber();
         $input['tel'] = str_replace(' ','',$request->tel);
         $input['birthdate'] = Carbon::parse($input['birthdate'])->format('Y-m-d');
         $user = User::create($input);
@@ -421,6 +421,7 @@ class UserController extends Controller
         }
         $input['tel'] = str_replace(' ','',$request->tel);
         $input['birthdate'] = Carbon::parse($input['birthdate'])->format('Y-m-d');
+//        return $input;
         $user = User::find($id);
         $user->update($input);
         DB::table('model_has_roles')->where('model_id', $request->id)->delete();

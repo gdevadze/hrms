@@ -34,6 +34,7 @@ class UpdateUserRequest extends FormRequest
             'password' => 'same:confirm-password',
             'birthdate' => 'required',
             'roles' => 'required',
+            'card_number' => 'required',
         ];
     }
 

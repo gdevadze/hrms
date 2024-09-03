@@ -132,6 +132,14 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="col-xxl-4 col-md-6">
+                                    <div>
+                                        <label for="card_number" class="form-label">ბარათის ნომერი</label>
+                                        <input type="text" class="form-control" name="card_number" value="{{ $user->card_number }}" id="card_number">
+                                        <span class="text-danger errors email_err"></span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="table-responsive">

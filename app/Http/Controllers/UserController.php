@@ -199,7 +199,7 @@ class UserController extends Controller
             ->addColumn('company_title_position', function ($data) {
                 $html = '';
                 foreach ($data->user_companies as $userCompany){
-                    $html.= 'კომპანია: '.$userCompany->company->title.' - '.$userCompany->position->title.'<br>';
+                    $html.= $userCompany->position->title.'<br>';
                 }
                 return $html;
             })
@@ -214,6 +214,7 @@ class UserController extends Controller
             })
             ->addColumn('action', function ($data) {
                 $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
+                $html .= ' <a class="btn btn-soft-secondary waves-effect waves-light card_register" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="ბარათის რეგისტრაცია" href="javascript:void(0)"><i class="las la-id-card-alt"></i></a>';
                 $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="'.route('users.edit',$data->id).'"><i class="fa fa-edit"></i></a>';
                 $html .= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
                 if($data->user_companies()->where('status',1)->count() > 0){
@@ -224,6 +225,18 @@ class UserController extends Controller
             ->rawColumns(['role', 'action', 'active_status','company_title_position'])
             ->make(true);
 
+    }
+
+    public function userCardRegisterRender(Request $request): JsonResponse
+    {
+        $user = User::findOrFail($request->user_id);
+        return jsonResponse(['status' => 0,'html' => view('general.users.card_register',compact('user'))->render()]);
+    }
+
+    public function userCardRegister(Request $request,$id): JsonResponse
+    {
+        $user = User::findOrFail($id)->update(['card_number' => $request->card_number]);
+        return jsonResponse(['status' => 0,'msg' => 'ბარათის რეგისტრაცია წარმატებით განხორციელდა!']);
     }
 
     public function getUserFilesForAjax($id)

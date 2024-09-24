@@ -333,6 +333,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/download_file/{id}', [UserController::class, 'downloadFile'])->name('download.file');
             Route::post('/edit_user_company', [UserController::class, 'editUserCompany'])->name('edit.user.company');
             Route::post('/update_user_company/{id}', [UserController::class, 'updateUserCompany'])->name('update.user.company');
+            Route::post('/user_card_register_render', [UserController::class, 'userCardRegisterRender'])->name('card.register.render');
+            Route::post('/user_card_register/{id}', [UserController::class, 'userCardRegister'])->name('card.register');
 
 
             Route::post('/reset_password',[UserController::class,'resetPassword'])->name('reset.password');

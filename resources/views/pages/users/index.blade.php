@@ -73,7 +73,7 @@
                                     <th scope="col">@lang('full_name')</th>
                                     <th scope="col">@lang('phone')</th>
                                     <th scope="col">@lang('personal_number')</th>
-                                    <th scope="col">@lang('company_title_position')</th>
+                                    <th scope="col">პოზიცია</th>
                                     <th scope="col">@lang('action')</th>
                                 </tr>
                                 </thead>
@@ -86,7 +86,7 @@
                                     <th scope="col">@lang('full_name')</th>
                                     <th scope="col">@lang('phone')</th>
                                     <th scope="col">@lang('personal_number')</th>
-                                    <th scope="col">@lang('company_title_position')</th>
+                                    <th scope="col">პოზიცია</th>
                                     <th scope="col">@lang('action')</th>
                                 </tr>
                                 </tfoot>
@@ -165,6 +165,7 @@
                     {data: 'name_en', name: 'name_en', visible: false},
                     {data: 'surname_ka', name: 'surname_ka', visible: false},
                     {data: 'surname_en', name: 'surname_en', visible: false},
+                    {data: 'card_number', name: 'card_number', visible: false},
                 ],
                 createdRow: function (row, data, index) {
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();
@@ -360,6 +361,35 @@
             })
         })
 
+        $(document.body).on('click', '.card_register', function () {
+            let userId = $(this).data('id');
+            $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded
+            $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> @lang('wait')...</h3>');
+
+            $.ajax({
+                url: "{{ route('users.card.register.render') }}",
+                method: "POST",
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    'user_id': userId,
+                },
+                success: function (msg) {
+                    if (msg.status == 0) {
+                        $('.htmlDisplay').html(msg.html);
+                        $('#vacation-days-form')[0].reset(); // reset form on modals
+                    }else if(msg.status == 2){
+                        $('.htmlDisplay').html(`<h3 align=center class=text-danger>${msg.error}</h3>`);
+                    }
+                    else {
+                        $('.htmlDisplay').html('<h3 align=center class=text-danger><i class="fa fa-spin fa-spinner"></i> ამანათზე ინფორმაცია ვერ მოიძებნა!</h3>');
+                    }
+                },
+                error: function () {
+                    alert('შეცდომა, გაიმეორეთ მოქმედება.');
+                }
+            })
+        })
+
         $(document.body).on('click', '.save-btn', function () {
             let form = $('#user_info').serialize();
             let $this = $(this)
@@ -376,6 +406,7 @@
                         $this.html('შენახვა');
                         reload()
                         $this.prop('disabled', false);
+                        $('#modal_form_detail').modal('hide');
                     }
                 },
                 error: function (xhr, ajaxOptions, thrownError) {

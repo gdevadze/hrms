@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ asset('assets/cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css') }}">
 @endpush
 @section('content')
-
     <div class="main-content">
 
         <div class="page-content">
@@ -44,21 +43,27 @@
                                 </div>
                                 @foreach($weekDays as $key => $weekDay)
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" name="week_days[]" value="{{ $weekDay['key'] }}" id="formCheck-{{ $key }}">
+                                        <input class="form-check-input week-day-checkbox" type="checkbox" name="week_days[]" value="{{ $weekDay['key'] }}" id="formCheck-{{ $key }}">
                                         <label class="form-check-label" for="formCheck-{{ $key }}">
                                             {{ strtoupper($weekDay['title']) }}
                                         </label>
                                         <div class="row">
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div>
                                                     <label class="form-label mb-0">@lang('start_time')</label>
-                                                    <input type="text" name="start_time[]" class="form-control flatpickr-input active" data-provider="timepickr" data-time-hrs="true" id="timepicker-24hrs" readonly="readonly">
+                                                    <input type="text" name="start_time[]" class="form-control flatpickr-input active" disabled data-provider="timepickr" data-time-hrs="true" id="timepicker-24hrs" readonly="readonly">
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-4">
                                                 <div>
                                                     <label class="form-label mb-0">@lang('end_time')</label>
-                                                    <input type="text" name="end_time[]" class="form-control flatpickr-input active" data-provider="timepickr" data-time-hrs="true" id="timepicker-24hrs" readonly="readonly">
+                                                    <input type="text" name="end_time[]" class="form-control flatpickr-input active" disabled data-provider="timepickr" data-time-hrs="true" id="timepicker-24hrs" readonly="readonly">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <div>
+                                                    <label class="form-label mb-0">შესვენების ხანგრძლივობა</label>
+                                                    <input type="text" name="break_duration[]" class="form-control" @if(!isset($weekDay['times'])) disabled @endif value="{{ $weekDay['times']['break_duration'] ?? '' }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -80,5 +85,19 @@
 @endsection
 @push('js')
     <script src="{{ asset('assets/js/pages/form-pickers.init.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.week-day-checkbox').change(function() {
+                var isChecked = $(this).is(':checked');
+                var parentDiv = $(this).closest('.form-check');
+                var inputsToToggle = parentDiv.find('input[type="text"]');
 
+                if (isChecked) {
+                    inputsToToggle.removeAttr('disabled');
+                } else {
+                    inputsToToggle.attr('disabled', 'disabled');
+                }
+            });
+        });
+    </script>
 @endpush

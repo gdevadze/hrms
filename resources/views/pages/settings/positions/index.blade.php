@@ -110,7 +110,7 @@
 
             table = $('#positions').DataTable({
                 processing: true,
-                order: [[0, 'desc']],
+                order: [[1, 'asc']],
                 serverSide: true,
                 ajax: {
                     url: "{{ route('settings.positions.ajax') }}",

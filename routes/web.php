@@ -203,6 +203,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [DynamicWorkingScheduleController::class, 'index'])->name('index');
             Route::post('/ajax', [DynamicWorkingScheduleController::class, 'ajax'])->name('ajax');
             Route::post('/update', [DynamicWorkingScheduleController::class, 'update'])->name('update');
+            Route::post('/working_schedule_time_list_render',[DynamicWorkingScheduleController::class,'workingScheduleTimeListRender'])->name('time.list.render');
+            Route::post('/working_schedule_set_time_users',[DynamicWorkingScheduleController::class,'workingScheduleSetTimeUsers'])->name('set.time.users');
         });
 
         Route::group(['prefix' => 'dynamic_working_schedule_time', 'as' => 'dynamic.working.schedule.time.'], function () {

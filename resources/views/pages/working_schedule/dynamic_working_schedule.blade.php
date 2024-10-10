@@ -40,18 +40,34 @@
                     </div><!-- end card header -->
                     <div class="card-body">
                         <div class="row mb-2">
-                            <div class="col-xxl-6 col-md-6">
-                                <label for="basiInput" class="form-label">@lang('date')</label>
+                            <div class="col-lg-3 col-md-3">
+                                <label for="basiInput" class="form-label">@lang('date_from')</label>
                                 <input type="text" class="form-control flatpickr-input" id="fltpcks" name="start_date" readonly="readonly">
                                 <span class="text-danger errors start_date_err"></span>
                             </div>
-                            <div class="col-lg-6 col-md-6">
+                            <div class="col-lg-3 col-md-3">
+                                <label for="basiInput" class="form-label">@lang('date_to')</label>
+                                <input type="text" class="form-control flatpickr-input" id="fltpcks1" name="end_date" readonly="readonly">
+                                <span class="text-danger errors start_date_err"></span>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
                                 <div class="mb-3">
                                     <label for="company_id" class="form-label text-muted">კომპანია</label>
                                     <select class="form-control" data-choices name="choices-single-default" id="company_id">
                                         <option value="">აირჩიეთ</option>
                                         @foreach($companies as $company)
                                             <option value="{{ $company->id }}">{{ $company->title }} - {{ $company->identification_code }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
+                                <div class="mb-3">
+                                    <label for="company_id" class="form-label text-muted">პოზიცია</label>
+                                    <select class="form-control" data-choices name="choices-single-default" id="position_id">
+                                        <option value="">აირჩიეთ</option>
+                                        @foreach($positions as $position)
+                                            <option value="{{ $position->id }}">{{ $position->title }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -69,37 +85,54 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ka.js"></script>
     <script>
         $(document).ready(function() {
             loadDynamicWorkingTable()
             $('#company_id').on('change', function () {
                 loadDynamicWorkingTable()
             });
+            $('#position_id').on('change', function () {
+                loadDynamicWorkingTable()
+            });
             $('#fltpcks').on('change', function () {
                 loadDynamicWorkingTable()
             });
-            flatpickr('#fltpcks',{
-                plugins: [
-                    new monthSelectPlugin({
-                        shorthand: true, //defaults to false
-                        dateFormat: "m.Y", //defaults to "F Y"
-                        altFormat: "F Y", //defaults to "F Y"
-                    })
-                ]
+            $('#fltpcks1').on('change', function () {
+                loadDynamicWorkingTable()
             });
 
+            let today = new Date();
+
+            // Initialize Flatpickr with start_date as today
+            flatpickr("#fltpcks", {
+                defaultDate: today,
+                "locale": "ka",
+                dateFormat: "Y-m-d"
+            });
+
+            // Set end_date to 7 days from today
+            let endDate = new Date();
+            endDate.setDate(today.getDate() + 7);
+
+            flatpickr("#fltpcks1", {
+                defaultDate: endDate,
+                "locale": "ka",
+                dateFormat: "Y-m-d"
+            });
         });
 
         function loadDynamicWorkingTable(){
             $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> დაელოდეთ...</h3>');
-            console.log($('#fltpcks').val())
             $.ajax({
                 url: "{{ route('dynamic.working.schedule.ajax') }}",
                 method: "POST",
                 data: {
                     '_token': '{{ csrf_token() }}',
                     'company_id': $('#company_id').val(),
-                    'selected_date': $('#fltpcks').val()
+                    'position_id': $('#position_id').val(),
+                    'start_date': $('#fltpcks').val(),
+                    'end_date': $('#fltpcks1').val()
                 },
                 success: function (msg) {
                     if (msg.status == 0) {
@@ -119,6 +152,37 @@
                 }
             })
         }
+
+        $(document.body).on('click', '.save-btn', function () {
+            let form = $('#set_time_user').serializeArray();
+            form.push({name: "company_id", value: $('#company_id').val()});
+            form.push({name: "position_id", value: $('#position_id').val()});
+            let $this = $(this)
+            $this.html('<i class="fa fa-spin fa-spinner"></i> დაელოდეთ...');
+            $this.prop('disabled', true);
+            $.ajax({
+                url: $this.data('link'),
+                method: "POST",
+                data: form,
+                success: function (response) {
+                    if (response.status == 0) {
+                        Swal.fire('წარმატებული!',response.msg,'success');
+                        $('#dateModal').modal('hide');
+                        loadDynamicWorkingTable()
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    if (xhr.status == 422) { // when status code is 422, it's a validation issue
+                        $('.errors').html('');
+                        $.each(xhr.responseJSON.errors, function (i, error) {
+                            $('.'+i+'_err').html(error);
+                        });
+                    }
+                    $this.html('შენახვა');
+                    $this.prop('disabled', false);
+                }
+            })
+        })
     </script>
 
 @endpush

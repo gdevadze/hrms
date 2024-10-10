@@ -24,6 +24,7 @@ class WorkingScheduleController extends Controller
         $weekDays = $request->week_days;
         $startTimes = $request->start_time;
         $endTimes = $request->end_time;
+        $breakDurations = $request->break_duration;
 
         $result = [];
         foreach ($weekDays as $key=> $day) {
@@ -32,7 +33,8 @@ class WorkingScheduleController extends Controller
             }
             $result[$day] = [
                 'start_time' => $startTimes[$key],
-                'end_time' => $endTimes[$key]
+                'end_time' => $endTimes[$key],
+                'break_duration' => $breakDurations[$key]
             ];
         }
         if (!count($result)){

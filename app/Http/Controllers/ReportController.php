@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserCompany;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -46,15 +47,31 @@ class ReportController extends Controller
             })
             ->addColumn('action', function ($data) {
                 $html = '';
-                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="PDF"  href="' . route('vacations.pdf', $data->id) . '" target="_blank"><i class="fa fa-file-pdf-o"></i></a>';
-                if ($data->status != 2) {
-                    $html .= ' <a class="btn btn-soft-success waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="' . __('confirm') . '" onclick="confirmHonorableReason(' . $data->id . ')" href="javascript:void(0)"><i class="fa fa-check"></i></a>';
-                }
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="' . route('reports.movements.edit', $data->id) . '"><i class="fa fa-edit"></i></a>';
                 return $html;
             })
             ->rawColumns(['formatted_start_date', 'formatted_end_date', 'action'])
             ->make(true);
 
+    }
+
+    public function movementsExportExcel(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        return Excel::download(new \App\Exports\UserMovementsExport($startDate,$endDate), 'movements - ' . date('d.m.Y') . '.xlsx');
+    }
+
+    public function movementEdit($id): View
+    {
+        $movement = Movement::findOrFail($id);
+        return view('pages.reports.movement_edit',compact('movement'));
+    }
+
+    public function movementUpdate(Request $request,$id): RedirectResponse
+    {
+        $movement = Movement::findOrFail($id)->update($request->all());
+        return redirect()->back();
     }
 
     public function rs(): View
@@ -77,7 +94,6 @@ class ReportController extends Controller
             })
             ->rawColumns(['formatted_start_date', 'formatted_end_date', 'action'])
             ->make(true);
-
     }
 
     public function hrTable(): View

@@ -262,6 +262,9 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => 'movements','as' => 'movements.'], function (){
                 Route::get('/',[ReportController::class,'movements'])->name('index');
                 Route::post('/ajax',[ReportController::class,'movementsAjax'])->name('ajax');
+                Route::get('/edit/{id}',[ReportController::class,'movementEdit'])->name('edit');
+                Route::get('/export_excel/{start_date}/{end_date}',[ReportController::class,'movementsExportExcel'])->name('export.excel');
+                Route::post('/update/{id}',[ReportController::class,'movementUpdate'])->name('update');
             });
 
             Route::group(['prefix' => 'rs','as' => 'rs.'], function (){

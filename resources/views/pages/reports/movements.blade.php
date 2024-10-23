@@ -50,6 +50,7 @@
                                 <span class="text-danger errors start_date_err"></span>
                             </div>
                         </div>
+                        <button type="button" class="btn btn-soft-secondary waves-effect waves-light mb-3" onclick="exportExcel()"><i class="ri-file-excel-line"></i></a> Excel</button>
                         <div class="table-responsive">
                             <table id="positions" class="table table-striped table-bordered">
                                 <thead>
@@ -58,6 +59,7 @@
                                     <th scope="col">დასახელება</th>
                                     <th scope="col">@lang('date_of_announcement')</th>
                                     <th scope="col">@lang('expiration_date')</th>
+                                    <th scope="col">@lang('action')</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -67,8 +69,9 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">დასახელება</th>
-                                    <th scope="col">დასახელება</th>
-                                    <th scope="col">დასახელება</th>
+                                    <th scope="col">@lang('date_of_announcement')</th>
+                                    <th scope="col">@lang('expiration_date')</th>
+                                    <th scope="col">@lang('action')</th>
                                 </tr>
                                 </tfoot>
                             </table>
@@ -151,6 +154,7 @@
                     {data: 'user.full_name', name: 'user.name_ka'},
                     {data: 'formatted_start_date', name: 'start_date'},
                     {data: 'formatted_end_date', name: 'end_date'},
+                    {data: 'action', name: 'action'},
                 ],
                 createdRow: function (row, data, index) {
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();
@@ -164,6 +168,19 @@
                 table.draw();
             });
         });
+
+        function exportExcel(){
+            let startDate = $('#fltpcks').val()
+            let endDate = $('#fltpcks1').val()
+            if(startDate && endDate){
+                let route = "{{ route('reports.movements.export.excel', [':start_date',':end_date']) }}"
+                route = route.replace(':start_date', startDate);
+                route = route.replace(':end_date', endDate);
+                return window.location.href = route
+            }else{
+                Swal.fire('შეცდომა!','მიუთითეთ ფილტრაციის დეტალები','warning');
+            }
+        }
 
         $(document.body).on('click', '#add_position', function () {
             $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded

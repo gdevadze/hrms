@@ -19,9 +19,16 @@ class ReportController extends Controller
         return view('pages.reports.movements');
     }
 
-    public function movementsAjax(): JsonResponse
+    public function movementsAjax(Request $request): JsonResponse
     {
-        return Datatables()->of(Movement::query()->with('user'))
+        $movements = Movement::query()->with('user');
+        if($request->start_date){
+            $movements = $movements->whereDate('start_date','>=',$request->start_date);
+        }
+        if($request->end_date){
+            $movements = $movements->whereDate('start_date','<=',$request->end_date);
+        }
+        return Datatables()->of($movements)
             ->addIndexColumn()
             ->editColumn('formatted_start_date', function ($data) {
                 if ($data->checkUser($data->user['working_schedule']['week_days'])) {

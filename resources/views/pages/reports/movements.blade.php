@@ -38,6 +38,18 @@
 {{--                        </div>--}}
                     </div><!-- end card header -->
                     <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-lg-6 col-md-6">
+                                <label for="basiInput" class="form-label">@lang('date_from')</label>
+                                <input type="text" class="form-control flatpickr-input" id="fltpcks" name="start_date" readonly="readonly">
+                                <span class="text-danger errors start_date_err"></span>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <label for="basiInput" class="form-label">@lang('date_to')</label>
+                                <input type="text" class="form-control flatpickr-input" id="fltpcks1" name="end_date" readonly="readonly">
+                                <span class="text-danger errors start_date_err"></span>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table id="positions" class="table table-striped table-bordered">
                                 <thead>
@@ -105,11 +117,22 @@
     <script src="{{ asset('assets/cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js') }}"></script>
     <script src="{{ asset('assets/cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js') }}"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ka.js"></script>
+
     <script>
         let table;
         let save_method;
         $(document).ready(function () {
-
+            flatpickr("#fltpcks", {
+                "locale": "ka",
+                dateFormat: "Y-m-d"
+            });
+            flatpickr("#fltpcks1", {
+                "locale": "ka",
+                dateFormat: "Y-m-d"
+            });
             table = $('#positions').DataTable({
                 processing: true,
                 order: [[0, 'desc']],
@@ -117,9 +140,11 @@
                 ajax: {
                     url: "{{ route('reports.movements.ajax') }}",
                     type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                    },
+                    data: function (d) {
+                        d._token = '{{ csrf_token() }}'
+                        d.start_date = $('#fltpcks').val()
+                        d.end_date = $('#fltpcks1').val()
+                    }
                 },
                 columns: [
                     {data: 'id', name: 'id'},
@@ -130,6 +155,13 @@
                 createdRow: function (row, data, index) {
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();
                 }
+            });
+
+            $('#fltpcks').on('change', function () {
+                table.draw();
+            });
+            $('#fltpcks1').on('change', function () {
+                table.draw();
             });
         });
 

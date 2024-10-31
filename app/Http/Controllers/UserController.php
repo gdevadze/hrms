@@ -178,9 +178,11 @@ class UserController extends Controller
             ->make(true);
     }
 
-    public function getUsersForAjax(Request $request)
+    public function getUsersForAjax(Request $request): JsonResponse
     {
-        $users = User::query()->where('status',1);
+        $users = User::query()->where('status',1)->whereHas('user_companies', function($q){
+            return $q->where('status',1);
+        });
         if($request->role_id){
             $users = $users->role($request->role_id);
         }
@@ -215,7 +217,7 @@ class UserController extends Controller
             ->addColumn('action', function ($data) {
                 $html = ' <a class="btn btn-soft-secondary waves-effect waves-light staff_info" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="'.__('information').'" href="javascript:void(0)"><i class="fa fa-user"></i></a>';
                 $html .= ' <a class="btn btn-soft-secondary waves-effect waves-light card_register" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="ბარათის რეგისტრაცია" href="javascript:void(0)"><i class="las la-id-card-alt"></i></a>';
-                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="'.route('users.edit',$data->id).'"><i class="fa fa-edit"></i></a>';
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="'.route('users.edit',$data->id).'" target="_blank"><i class="fa fa-edit"></i></a>';
                 $html .= ' <a class="btn btn-soft-danger waves-effect waves-light change-password" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პაროლის შეცვლა" href="javascript:void(0)"><i class="fa fa-key"></i></a>';
                 if($data->user_companies()->where('status',1)->count() > 0){
                     $html.= ' <a class="btn btn-soft-danger waves-effect waves-light account-disable" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="პროფილის გაუქმება" href="javascript:void(0)"><i class="fa fa-ban"></i></a>';

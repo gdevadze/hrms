@@ -45,7 +45,7 @@
                     <div class="text-center mt-sm-5 mb-4 text-white-50">
                         <div>
                             <a href="{{ route('index') }}" class="d-inline-block auth-logo">
-                                <img src="https://www.batumiview.com/assets/v4/images/logo.png" alt="" height="70">
+                                <img src="https://giftoy.ge/assets/images/logo_white.png" alt="" height="70">
                             </a>
                         </div>
 {{--                        <p class="mt-3 fs-15 fw-medium">თანამშრომლების აღრიცხვის პროგრამა</p>--}}

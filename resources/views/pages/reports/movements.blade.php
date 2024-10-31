@@ -155,6 +155,10 @@
                     {data: 'formatted_start_date', name: 'start_date'},
                     {data: 'formatted_end_date', name: 'end_date'},
                     {data: 'action', name: 'action'},
+                    {data: 'user.name_en', name: 'user.name_en', visible: false},
+                    {data: 'user.surname_ka', name: 'user.surname_ka', visible: false},
+                    {data: 'user.surname_en', name: 'user.surname_en', visible: false},
+                    {data: 'user.personal_num', name: 'user.personal_num', visible: false},
                 ],
                 createdRow: function (row, data, index) {
                     $(row).find('[data-bs-toggle="tooltip"]').tooltip();

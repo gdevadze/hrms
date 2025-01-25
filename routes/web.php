@@ -262,6 +262,8 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => 'movements','as' => 'movements.'], function (){
                 Route::get('/',[ReportController::class,'movements'])->name('index');
                 Route::post('/ajax',[ReportController::class,'movementsAjax'])->name('ajax');
+                Route::get('/create',[ReportController::class,'movementCreate'])->name('create');
+                Route::post('/store',[ReportController::class,'movementStore'])->name('store');
                 Route::get('/edit/{id}',[ReportController::class,'movementEdit'])->name('edit');
                 Route::get('/export_excel/{start_date}/{end_date}',[ReportController::class,'movementsExportExcel'])->name('export.excel');
                 Route::post('/update/{id}',[ReportController::class,'movementUpdate'])->name('update');
@@ -273,14 +275,15 @@ Route::middleware(['auth'])->group(function () {
             });
 
             Route::group(['prefix' => 'hr_table','as' => 'hr_table.'], function (){
-                Route::get('/',[ReportController::class,'hrTable'])->name('index');
+                Route::get('/{type}',[ReportController::class,'hrTable'])->name('index');
                 Route::post('/ajax',[ReportController::class,'hrTableAjax'])->name('ajax');
-                Route::get('/export_excel/{id}/{selectedDate}',[ReportController::class,'exportHrTable'])->name('export.excel');
+                Route::get('/export_excel/{id}/{selectedDate}/{type}',[ReportController::class,'exportHrTable'])->name('export.excel');
             });
 
             Route::group(['prefix' => 'worked_hours','as' => 'worked.hours.'], function (){
-                Route::get('/',[ReportController::class,'workedHours'])->name('index');
+                Route::get('/{type}',[ReportController::class,'workedHours'])->name('index');
                 Route::post('/ajax',[ReportController::class,'workedHoursAjax'])->name('ajax');
+                Route::get('/export_excel/{id}/{selectedDate}/{type}',[ReportController::class,'exportWorkedHoursTable'])->name('export.excel');
             });
 
             Route::group(['prefix' => 'dynamic_shift','as' => 'dynamic.shift.'], function (){

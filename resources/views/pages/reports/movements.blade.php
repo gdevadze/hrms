@@ -32,12 +32,17 @@
                 <div class="card">
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">თანამშრომლის მოძრაობის რეპორტი</h4>
-{{--                        <div class="flex-shrink-0">--}}
-{{--                            <a type="button" class="btn btn-primary waves-effect waves-light" id="add_position"--}}
-{{--                               href="javascript:void(0)"><i class="fa fa-plus-square-o"></i> დამატება</a>--}}
-{{--                        </div>--}}
+                        <div class="flex-shrink-0">
+                            <a type="button" class="btn btn-primary waves-effect waves-light" href="{{ route('reports.movements.create') }}"><i class="fa fa-plus-square-o"></i> @lang('add')</a>
+                        </div>
                     </div><!-- end card header -->
                     <div class="card-body">
+                        @if ($message = Session::get('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ $message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
                         <div class="row mb-2">
                             <div class="col-lg-6 col-md-6">
                                 <label for="basiInput" class="form-label">@lang('date_from')</label>

@@ -42,6 +42,7 @@
                         @endif
                         <form action="{{ route('reports.movements.update',$movement->id) }}" method="POST" id="user_info">
                             @csrf
+                            <input type="hidden" name="user_id" value="{{ $movement->user_id }}">
                             <div class="row">
                                 <div class="col-xxl-6 col-md-6">
                                     <div>
@@ -54,6 +55,21 @@
                                     <div>
                                         <label for="birthdate" class="form-label">გასვლა</label>
                                         <input type="text" class="form-control" required name="end_date" value="{{ $movement->end_date }}" id="end_date" readonly="readonly">
+                                        <span class="text-danger errors birthdate_err"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-xxl-6 col-md-6">
+                                    <div>
+                                        <label for="birthdate" class="form-label">ახალი გამოცხადება</label>
+                                        <input type="text" class="form-control" name="new_start_date" value="" id="start_date" readonly="readonly">
+                                        <span class="text-danger errors birthdate_err"></span>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-6 col-md-6">
+                                    <div>
+                                        <label for="birthdate" class="form-label">ახალი გასვლა</label>
+                                        <input type="text" class="form-control" name="new_end_date" value="" id="end_date" readonly="readonly">
                                         <span class="text-danger errors birthdate_err"></span>
                                     </div>
                                 </div>

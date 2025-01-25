@@ -119,7 +119,58 @@ Route::get('/missings', function (\App\Services\HonorableReasonService $honorabl
 
 Route::post('/logs', function (Request $request){
     $data = $request->all();
-    foreach ($data as $json){
+    foreach ($data as $json) {
+        $user = User::where('card_number', $json['card_id'])->latest()->first();
+
+        if (!$user) {
+            continue; // Skip if user is not found
+        }
+
+        $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
+        $movement = \App\Models\Movement::whereDate('start_date', $startDate->format('Y-m-d'))
+            ->where('user_id', $user->id)
+            ->first();
+
+        $endDate = $movement->end_date ?? null;
+
+        if ($json['end_date']) {
+            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+        }
+
+        // Check if start time is greater than 17:00
+        if ($startDate->hour >= 17 && $movement && $movement->end_date) {
+            // Add a new record if start time is greater than 17:00
+            $movement = \App\Models\Movement::create([
+                'user_id' => $user->id,
+                'card_number' => $json['card_id'],
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
+        } else {
+            // Update or create the movement
+            $movement = \App\Models\Movement::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'card_number' => $json['card_id'],
+                    'start_date' => $startDate,
+                ],
+                ['end_date' => $endDate]
+            );
+        }
+
+        // Check if end_date is greater than start_date
+        if ($endDate && $endDate->greaterThan($startDate)) {
+            // Add 12 hours to the end_date and update the record
+            $movement->update([
+                'end_date' => $endDate->addHours(12),
+            ]);
+        }
+    }
+
+
+    /*
+     *
+     * foreach ($data as $json){
         $user = User::where('card_number',$json['card_id'])->latest()->first();
         $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
         $movement = \App\Models\Movement::whereDate('start_date',$startDate->format('Y-m-d'))->where('user_id',$user->id)->first();
@@ -135,5 +186,6 @@ Route::post('/logs', function (Request $request){
             ],['end_date' => $endDate]);
         // }
     }
+     */
     return jsonResponse($data,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
 });

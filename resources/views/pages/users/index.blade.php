@@ -37,7 +37,7 @@
                     </div><!-- end card header -->
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <strong>პროგრამაზე დაშვება</strong>
                                 <select class="form-control" id="role_id">
                                     <option value="">აირჩიეთ</option>
@@ -46,7 +46,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <strong>დეპარტამენტი</strong>
                                 <select class="form-control" id="department_id">
                                     <option selected value="">აირჩიეთ</option>
@@ -55,13 +55,20 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 <strong>პოზიცია</strong>
                                 <select class="form-control" id="position_id">
                                     <option selected value="">აირჩიეთ</option>
                                     @foreach($positions as $position)
                                     <option value="{{ $position->id }}">{{ $position->title }}</option>
                                     @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <strong>სტატუსი</strong>
+                                <select class="form-control" id="status_id">
+                                    <option selected value="1">აქტიური</option>
+                                    <option value="2">არა აქტიური</option>
                                 </select>
                             </div>
                         </div>
@@ -153,6 +160,7 @@
                         d.role_id = $('#role_id').val()
                         d.position_id = $('#position_id').val()
                         d.department_id = $('#department_id').val()
+                        d.status = $('#status_id').val()
                     }
                 },
                 columns: [
@@ -179,7 +187,9 @@
         $('#position_id').on('change', function () {
             table.draw();
         });
-
+        $('#status_id').on('change', function () {
+            table.draw();
+        });
         $('#department_id').on('change', function () {
             table.draw();
         });

@@ -180,9 +180,17 @@ class UserController extends Controller
 
     public function getUsersForAjax(Request $request): JsonResponse
     {
-        $users = User::query()->where('status',1)->whereHas('user_companies', function($q){
-            return $q->where('status',1);
-        });
+        $users = User::query()->where('status',1);
+        if($request->status == 1){
+            $users = $users->whereHas('user_companies', function($q){
+                return $q->where('status',1);
+            });
+        }
+        if($request->status == 2){
+            $users = $users->whereHas('user_companies', function($q){
+                return $q->where('status',0);
+            });
+        }
         if($request->role_id){
             $users = $users->role($request->role_id);
         }
@@ -366,7 +374,7 @@ class UserController extends Controller
         $companies = Company::all();
         $workingSchedules = WorkingSchedule::all();
         $positions = Position::all();
-        $roles = Role::where('name','!=','System Administrator')->get();
+        $roles = Role::whereNotIn('name',['System Administrator','Admin'])->get();
         $contractTypes = ContactType::all();
         $departments = Department::all();
         $countries = Country::all();
@@ -409,7 +417,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        $roles = Role::pluck('name', 'name')->all();
+        $roles = Role::whereNotIn('name',['System Administrator','Admin'])->pluck('name', 'name')->all();
         $userRole = $user->roles->pluck('name', 'name')->all();
         $companies = Company::all();
         $workingSchedules = WorkingSchedule::all();

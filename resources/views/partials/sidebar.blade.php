@@ -54,7 +54,15 @@
                 </li>
             @endif
 
-            @if(!currentUser()->hasRole('User'))
+            @if(currentUser()->hasRole('Admin'))
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{{ route('reports.movements.index') }}">
+                        <i class="ri-calendar-2-line"></i> <span data-key="t-widgets">გატარებები</span>
+                    </a>
+                </li>
+            @endif
+
+            @if(!currentUser()->hasRole('მომხმარებელი') && !currentUser()->hasRole('Admin'))
 {{--                <li class="nav-item">--}}
 {{--                    <a class="nav-link menu-link" href="{{ route('messages.index') }}">--}}
 {{--                        <i class="ri-message-fill"></i> <span data-key="t-widgets">SMS შეტყობინებები</span>--}}
@@ -98,13 +106,49 @@
                                    data-key="t-analytics">თანამშრომლის მოძრაობის რეპორტი</a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('reports.worked.hours.index') }}" class="nav-link"
-                                   data-key="t-analytics">თანამშრომლის ნამუშევარი საათის რეპორტი</a>
+                                <a href="#sidebarAccount" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAccount" data-key="t-level-1.2"> თანამშრომლის ნამუშევარი საათის რეპორტი
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarAccount">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item">
+                                            <a href="{{ route('reports.worked.hours.index',1) }}" class="nav-link" data-key="t-level-2.1"> გრაფიკით </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('reports.worked.hours.index',2) }}" class="nav-link" data-key="t-level-2.1"> რეალური </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('reports.hr_table.index') }}" class="nav-link"
-                                   data-key="t-analytics">ტაბელი</a>
+                                <a href="#sidebarAccount1" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAccount" data-key="t-level-1.2"> ტაბელი
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarAccount1">
+                                    <ul class="nav nav-sm flex-column">
+                                        <li class="nav-item">
+                                            <a href="{{ route('reports.hr_table.index',1) }}" class="nav-link" data-key="t-level-2.1"> გრაფიკით </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('reports.hr_table.index',2) }}" class="nav-link" data-key="t-level-2.1"> რეალური </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
+{{--                            <li class="nav-item">--}}
+{{--                                <a href="{{ route('reports.worked.hours.index',1) }}" class="nav-link"--}}
+{{--                                   data-key="t-analytics">თანამშრომლის ნამუშევარი საათის რეპორტი - გრაფიკით</a>--}}
+{{--                            </li>--}}
+{{--                            <li class="nav-item">--}}
+{{--                                <a href="{{ route('reports.worked.hours.index',2) }}" class="nav-link"--}}
+{{--                                   data-key="t-analytics">თანამშრომლის ნამუშევარი საათის რეპორტი - რეალური</a>--}}
+{{--                            </li>--}}
+{{--                            <li class="nav-item">--}}
+{{--                                <a href="{{ route('reports.hr_table.index',1) }}" class="nav-link"--}}
+{{--                                   data-key="t-analytics">ტაბელი - გრაფიკით</a>--}}
+{{--                            </li>--}}
+{{--                            <li class="nav-item">--}}
+{{--                                <a href="{{ route('reports.hr_table.index',2) }}" class="nav-link"--}}
+{{--                                   data-key="t-analytics">ტაბელი - რეალური</a>--}}
+{{--                            </li>--}}
 {{--                            <li class="nav-item">--}}
 {{--                                <a href="{{ route('settings.positions.index') }}" class="nav-link"--}}
 {{--                                   data-key="t-analytics">დაგვიანების კომენტარების რეპორტი</a>--}}

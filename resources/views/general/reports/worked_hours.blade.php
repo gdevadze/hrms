@@ -1,3 +1,4 @@
+<button type="button" class="btn btn-soft-secondary waves-effect waves-light mb-3" onclick="exportExcel()"><i class="ri-file-excel-line"></i></a> Excel</button>
 <div class="table-responsive">
 
     <table style="width:100%;text-align: center !important;">
@@ -13,7 +14,7 @@
         </tr>
         <tr>
             @for($i = 1; $i <= $month_days; $i++)
-                <th colspan="1" style="height: 110px; width: 20px !important;">{{ $i }}</th>
+                <th colspan="1" style="height: 110px; width: 20px !important;">{{ $i }}.{{ $month }}.{{ $year }}</th>
             @endfor
             <th rowspan="1">დღე</th>
             <th>ჯამი</th>
@@ -38,7 +39,9 @@
                         <font face="Sylfaen" color="#000000">
                             @isset($res['value'])
                                 @if($res['value'] == '')
-                                    {{ $res['worked_hours'] }}
+                                    @if($type == 2){{ $res['start_date'] }} - {{ $res['end_date'] }}
+                                    <br>
+                                    ნამ. სთ: @endif{{ $res['worked_hours'] }}@isset($res['minutes']):{{ $res['minutes'] }}@endisset
                                 @else
 
                                     {{ $res['value'] }}
@@ -61,9 +64,6 @@
         </tr>
 
         @endforeach
-
-
-
     </table>
 
     <style>

@@ -256,7 +256,7 @@
                         </div> <!-- .card-->
                     </div> <!-- .col-->
                     @endif
-                    @if(count($expireContracts))
+                    @if(!currentUser()->hasRole('მომხმარებელი') && !currentUser()->hasRole('Admin') && count($expireContracts))
                         <div class="col-xl-4">
                             <div class="card card-height-100">
                                 <div class="card-header align-items-center d-flex">

@@ -23,6 +23,9 @@ class ReportController extends Controller
     public function movementsAjax(Request $request): JsonResponse
     {
         $movements = Movement::query()->with('user');
+        if(currentUser()->hasRole('Admin')){
+            $movements = Movement::query()->with('user')->whereDate('start_date',Carbon::today())->whereIn('user_id',[175,174]);
+        }
         if($request->start_date){
             $movements = $movements->whereDate('start_date','>=',$request->start_date);
         }
@@ -62,6 +65,21 @@ class ReportController extends Controller
         return Excel::download(new \App\Exports\UserMovementsExport($startDate,$endDate), 'movements - ' . date('d.m.Y') . '.xlsx');
     }
 
+    public function movementCreate(): View
+    {
+        $users = UserCompany::all();
+        return view('pages.reports.movement_create',compact('users'));
+    }
+
+    public function movementStore(Request $request): RedirectResponse
+    {
+        $user = User::findOrFail($request->user_id);
+        $data = $request->all();
+        $data['card_number'] = $user->card_number;
+        $movement = Movement::create($data);
+        return redirect()->to(route('reports.movements.index'))->with('success','გატარება წარმატებით დაემატა!');
+    }
+
     public function movementEdit($id): View
     {
         $movement = Movement::findOrFail($id);
@@ -70,7 +88,18 @@ class ReportController extends Controller
 
     public function movementUpdate(Request $request,$id): RedirectResponse
     {
-        $movement = Movement::findOrFail($id)->update($request->all());
+        $movement = Movement::findOrFail($id)->update($request->except('new_start_date','new_end_date'));
+        if($request->new_start_date){
+            $user = User::findOrFail($request->user_id);
+            $startDate = Carbon::parse($request->new_start_date)->format('Y-m-d H:i');
+//            $startDate = Carbon::parse($request->start_date)->format('Y-m-d H:i');
+            Movement::create([
+                'user_id' => $user->id,
+                'card_number' => $user->card_number,
+                'start_date' => $startDate,
+                'end_date' => $request->new_end_date,
+            ]);
+        }
         return redirect()->back();
     }
 
@@ -96,10 +125,10 @@ class ReportController extends Controller
             ->make(true);
     }
 
-    public function hrTable(): View
+    public function hrTable($type = 1): View
     {
         $companies = Company::all();
-        return view('pages.reports.hr_table', compact('companies'));
+        return view('pages.reports.hr_table', compact('companies','type'));
     }
 
     public function hrTableAjax(Request $request): JsonResponse
@@ -115,8 +144,14 @@ class ReportController extends Controller
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
         }
         $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
-            ?->map?->getWorkedHoursByDay($year, $month);
+        if ($request->type == 1){
+            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
+                ?->map?->getWorkedHoursByDay($year, $month);
+        }else{
+            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
+                ?->map?->getWorkedHoursByDaySchedule($year, $month);
+        }
+
         $company = Company::findOrFail($request->company_id);
         $date = Carbon::today()->format('d.m.Y');
         $startDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-01")->format('Y-m-d');
@@ -124,16 +159,22 @@ class ReportController extends Controller
         return jsonResponse(['html' => view('general.reports.hr_table', compact('month_days','users','company','date','startDate','endDate'))->render(), 'status' => 0]);
     }
 
-    public function exportHrTable($id,$selectedDate)
+    public function exportHrTable($id,$selectedDate,$type)
     {
         $company = Company::findOrFail($id);
-        return Excel::download(new \App\Exports\TabelExport($id,$selectedDate), $company->title.' ('.$company->identification_code.')'.' - ' . date('d.m.Y') . '.xlsx');
+        return Excel::download(new \App\Exports\TabelExport(1,$id,$selectedDate,$type), $company->title.' ('.$company->identification_code.')'.' - ' . date('d.m.Y') . '.xlsx');
     }
 
-    public function workedHours(): View
+    public function exportWorkedHoursTable($id,$selectedDate,$type)
+    {
+        $company = Company::findOrFail($id);
+        return Excel::download(new \App\Exports\TabelExport(2,$id,$selectedDate,$type), $company->title.' ('.$company->identification_code.')'.' - ' . date('d.m.Y') . '.xlsx');
+    }
+
+    public function workedHours($type = 1): View
     {
         $companies = Company::all();
-        return view('pages.reports.worked_hours', compact('companies'));
+        return view('pages.reports.worked_hours', compact('companies','type'));
     }
 
     public function dynamicShift(): View
@@ -173,12 +214,27 @@ class ReportController extends Controller
         if (!$request->company_id){
             return \jsonResponse(['status' => 2,'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
         }
-        $month_days = cal_days_in_month(CAL_GREGORIAN, 1, 2024);
-        $users = User::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('movements')->with('working_schedule')->get()
-            ?->map?->getWorkedHoursByDay('2024', '1');
+        $year = date('Y');
+        $month = date('m');
+        $type = $request->type;
+        if($request->selected_date){
+            $year = explode('.',$request->selected_date)[1];
+            $month = explode('.',$request->selected_date)[0];
+            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
+        }
+        $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        if ($type == 1){
+            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
+                ?->map?->getWorkedHoursByDay($year,$month);
+        }else{
+            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
+                ?->map?->getWorkedHoursByDaySchedule($year,$month);
+        }
+//        $users = User::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('movements')->with('working_schedule')->get()
+//            ?->map?->getWorkedHoursByDay1('2024', '09');
 //        return $users;
         $company = Company::findOrFail($request->company_id);
         $date = Carbon::today()->format('d.m.Y');
-        return jsonResponse(['html' => view('general.reports.worked_hours', compact('month_days','users','company','date'))->render(), 'status' => 0]);
+        return jsonResponse(['html' => view('general.reports.worked_hours', compact('month_days','users','company','date','year','month','type'))->render(), 'status' => 0]);
     }
 }

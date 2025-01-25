@@ -121,9 +121,10 @@
             let selectedDate = $('#fltpcks').val()
             console.log(companyId,selectedDate)
             if(companyId){
-                let route = "{{ route('reports.hr_table.export.excel', [':id',':selectedDate']) }}"
+                let route = "{{ route('reports.hr_table.export.excel', [':id',':selectedDate',':type']) }}"
                 route = route.replace(':id', companyId);
                 route = route.replace(':selectedDate', selectedDate);
+                route = route.replace(':type', '{{ $type }}');
                 // location.href = route;
                 // console.log(route)
                 return window.location.href = route
@@ -140,6 +141,7 @@
                 data: {
                     '_token': '{{ csrf_token() }}',
                     'company_id': $('#company_id').val(),
+                    'type': '{{ $type }}',
                     'selected_date': $('#fltpcks').val()
                 },
                 success: function (msg) {

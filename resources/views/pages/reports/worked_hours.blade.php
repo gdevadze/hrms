@@ -7,6 +7,8 @@
           href="{{ asset('assets/cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css') }}"/>
 
     <link rel="stylesheet" href="{{ asset('assets/cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css') }}">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 @endpush
 @section('content')
 
@@ -39,7 +41,12 @@
                     </div><!-- end card header -->
                     <div class="card-body">
                         <div class="row mb-2">
-                            <div class="col-lg-12 col-md-12">
+                            <div class="col-xxl-6 col-md-6">
+                                <label for="basiInput" class="form-label">@lang('date')</label>
+                                <input type="text" class="form-control flatpickr-input" id="fltpcks" name="start_date" readonly="readonly">
+                                <span class="text-danger errors start_date_err"></span>
+                            </div>
+                            <div class="col-lg-6 col-md-12">
                                 <div class="mb-3">
                                     <label for="company_id" class="form-label text-muted">კომპანია</label>
                                     <select class="form-control" data-choices name="choices-single-default" id="company_id">
@@ -87,13 +94,43 @@
 @endsection
 
 @push('js')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
     <script>
         $(document).ready(function () {
             loadHrTable()
             $('#company_id').on('change', function () {
                 loadHrTable()
             });
+            $('#fltpcks').on('change', function () {
+                loadHrTable()
+            });
+            flatpickr('#fltpcks',{
+                plugins: [
+                    new monthSelectPlugin({
+                        shorthand: true, //defaults to false
+                        dateFormat: "m.Y", //defaults to "F Y"
+                        altFormat: "F Y", //defaults to "F Y"
+                    })
+                ]
+            });
         })
+
+        function exportExcel(){
+            let companyId = $('#company_id').val()
+            let selectedDate = $('#fltpcks').val()
+            console.log(companyId,selectedDate)
+            if(companyId){
+                let route = "{{ route('reports.worked.hours.export.excel', [':id',':selectedDate',':type']) }}"
+                route = route.replace(':id', companyId);
+                route = route.replace(':selectedDate', selectedDate);
+                route = route.replace(':type', '{{ $type }}');
+                return window.location.href = route
+            }else{
+                Swal.fire('შეცდომა!','მიუთითეთ ფილტრაციის დეტალები','warning');
+            }
+        }
+
         function loadHrTable(){
             $(".htmlDisplay").html('<h3 align=center class=text-warning><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> დაელოდეთ...</h3>');
             $.ajax({
@@ -101,7 +138,9 @@
                 method: "POST",
                 data: {
                     '_token': '{{ csrf_token() }}',
-                    'company_id': $('#company_id').val()
+                    'type': '{{ $type }}',
+                    'company_id': $('#company_id').val(),
+                    'selected_date': $('#fltpcks').val()
                 },
                 success: function (msg) {
                     if (msg.status == 0) {

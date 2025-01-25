@@ -122,8 +122,12 @@ class Movement extends Model
             $minutes = (int)gmdate('i',$workedHours);
         }
         return [
+            'value' => '',
             'hours' => $displayTime ?? $workedHours,
-            'minutes' => $minutes ?? 0
+            'worked_hours' => $displayTime ?? 0,
+            'minutes' => $minutes ?? 0,
+            'start_date' => ($this->start_date) ? Carbon::parse($this->start_date)->format('H:i') : 0,
+            'end_date' => ($this->end_date) ? Carbon::parse($this->end_date)->format('H:i') : 0
         ];
     }
 

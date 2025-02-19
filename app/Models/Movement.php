@@ -106,26 +106,35 @@ class Movement extends Model
         );
     }
 
-    public function workedHours(): Attribute
-    {
-        return new Attribute(
-            get: fn($value) => $this->getWorkedHours()
-        );
-    }
+//    public function workedHours(): Attribute
+//    {
+//        return new Attribute(
+//            get: fn($value) => $this->getWorkedHours()
+//        );
+//    }
 
     public function getWorkedHours()
     {
         $workedHours = '-';
+        $atNight = 0;
         if ($this->end_date){
-            $workedHours = Carbon::parse($this->start_date)->addHour()->diffInSeconds($this->end_date);
+            $workedHours = Carbon::parse($this->start_date)->diffInSeconds($this->end_date);
             $displayTime = (int)gmdate('H:i:s',$workedHours);
             $minutes = (int)gmdate('i',$workedHours);
+
+
+            $firstTime = Carbon::createFromTimeString($this->start_date);
+            $secondTime = Carbon::createFromTimeString($this->end_date);
+            $endTime = calculateNightHours($firstTime,$secondTime);
+            $atNight += $endTime;
         }
         return [
+            'id' => $this->id,
             'value' => '',
             'hours' => $displayTime ?? $workedHours,
             'worked_hours' => $displayTime ?? 0,
             'minutes' => $minutes ?? 0,
+            'at_night' => $atNight,
             'start_date' => ($this->start_date) ? Carbon::parse($this->start_date)->format('H:i') : 0,
             'end_date' => ($this->end_date) ? Carbon::parse($this->end_date)->format('H:i') : 0
         ];

@@ -3,7 +3,9 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserMovementController;
 use App\Http\Controllers\Api\UserVacationController;
+use App\Models\Movement;
 use App\Models\User;
+use App\Models\UserConfirmedMovement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +78,19 @@ Route::name('api.')->group(function() {
 //    return $request->user();
 //});
 
+Route::get('/calculate_worked_hours', function (){
+    $date = Carbon::today()->subMonth();
+    $movements = Movement::whereYear('start_date',$date->year)->whereMonth('start_date',$date->month)->get()->map->getWorkedHours();
+    $userConfirmedMovement = UserConfirmedMovement::firstOrCreate([
+        'date' => $date,
+        'company_id' => 1
+    ]);
+    foreach ($movements as $movement){
+        Movement::findOrFail($movement['id'])->update(['worked_hours' => $movement['worked_hours'],'at_night_hours' => $movement['at_night'],'user_confirmed_movement_id' => $userConfirmedMovement->id]);
+    }
+    return $movements;
+});
+
 Route::post('/users', function (){
     $users = User::all(['name_en','card_number']);
     return jsonResponse($users,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
@@ -118,74 +133,140 @@ Route::get('/missings', function (\App\Services\HonorableReasonService $honorabl
 });
 
 Route::post('/logs', function (Request $request){
-    $data = $request->all();
-    foreach ($data as $json) {
-        $user = User::where('card_number', $json['card_id'])->latest()->first();
-
-        if (!$user) {
-            continue; // Skip if user is not found
+    $convertDate = function($dateStr) {
+        if (!$dateStr) {
+            return null;
         }
-
-        $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
-        $movement = \App\Models\Movement::whereDate('start_date', $startDate->format('Y-m-d'))
-            ->where('user_id', $user->id)
-            ->first();
-
-        $endDate = $movement->end_date ?? null;
-
-        if ($json['end_date']) {
-            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+        try {
+            return Carbon::parse($dateStr);
+        } catch(\Exception $ex) {
+            return null;
         }
+    };
 
-        // Check if start time is greater than 17:00
-        if ($startDate->hour >= 17 && $movement && $movement->end_date) {
-            // Add a new record if start time is greater than 17:00
-            $movement = \App\Models\Movement::create([
-                'user_id' => $user->id,
-                'card_number' => $json['card_id'],
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ]);
-        } else {
-            // Update or create the movement
-            $movement = \App\Models\Movement::updateOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'card_number' => $json['card_id'],
-                    'start_date' => $startDate,
-                ],
-                ['end_date' => $endDate]
-            );
+    $newEntryByHours = 12;
+
+    $source = [
+        [
+            "CardID" => "0012570540",
+            "enter_date" => "2025-02-05 10:00:00",
+            "end_date" => "2025-02-06 10:00:00"
+        ],
+        [
+            "CardID" => "0012570540",
+            "enter_date" => "2025-02-06 19:00:00",
+            "end_date" => "2025-02-07 10:00:00"
+        ]
+    ];
+
+    $carbonArray = [];
+    foreach($source as $item) {
+        if ($date1 = $convertDate($item['enter_date'])) {
+            $carbonArray[] = $date1;
         }
-
-        // Check if end_date is greater than start_date
-        if ($endDate && $endDate->greaterThan($startDate)) {
-            // Add 12 hours to the end_date and update the record
-            $movement->update([
-                'end_date' => $endDate->addHours(12),
-            ]);
+        if ($date2 = $convertDate($item['end_date'])) {
+            $carbonArray[] = $date2;
         }
     }
 
+    // Sort dates ASC
+    usort($carbonArray, function ($a, $b) {
+        return $a->lt($b) ? -1 : ($a->gt($b) ? 1 : 0);
+    });
 
-    /*
-     *
-     * foreach ($data as $json){
-        $user = User::where('card_number',$json['card_id'])->latest()->first();
-        $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
-        $movement = \App\Models\Movement::whereDate('start_date',$startDate->format('Y-m-d'))->where('user_id',$user->id)->first();
-        $endDate = $movement->end_date ?? null;
-        if ($json['end_date']){
-            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+    $dataToStore = [];
+    $i = 0;
+    while ($i < count($carbonArray)) {
+        $started_at = $carbonArray[$i];
+        $ended_at = null;
+        $i++;
+
+        while ($i < count($carbonArray) && $started_at->diffInHours($carbonArray[$i]) <= $newEntryByHours) {
+            $ended_at = $carbonArray[$i];
+            $i++;
         }
-        // if(!$movement){
-            \App\Models\Movement::where('start_date',$startDate)->updateOrCreate([
-                'user_id' => $user->id,
-                'card_number' => $json['card_id'],
-                'start_date' => $startDate,
-            ],['end_date' => $endDate]);
-        // }
+
+        $dataToStore[] = ['start_date' => $started_at->toDateTimeString(), 'end_date' => $ended_at ? $ended_at->toDateTimeString() : null];
     }
-     */
-    return jsonResponse($data,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
+
+
+//    return $dataToStore;
+
+
+    return jsonResponse($dataToStore,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
 });
+
+
+
+//Route::post('/logs', function (Request $request){
+//    $data = $request->all();
+//    foreach ($data as $json) {
+//        $user = User::where('card_number', $json['card_id'])->latest()->first();
+//
+//        if (!$user) {
+//            continue; // Skip if user is not found
+//        }
+//
+//        $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
+//        $movement = \App\Models\Movement::whereDate('start_date', $startDate->format('Y-m-d'))
+//            ->where('user_id', $user->id)
+//            ->first();
+//
+//        $endDate = $movement->end_date ?? null;
+//
+//        if ($json['end_date']) {
+//            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+//        }
+//
+//        // Check if start time is greater than 17:00
+//        if ($startDate->hour >= 17 && $movement && $movement->end_date) {
+//            // Add a new record if start time is greater than 17:00
+//            $movement = \App\Models\Movement::create([
+//                'user_id' => $user->id,
+//                'card_number' => $json['card_id'],
+//                'start_date' => $startDate,
+//                'end_date' => $endDate,
+//            ]);
+//        } else {
+//            // Update or create the movement
+//            $movement = \App\Models\Movement::updateOrCreate(
+//                [
+//                    'user_id' => $user->id,
+//                    'card_number' => $json['card_id'],
+//                    'start_date' => $startDate,
+//                ],
+//                ['end_date' => $endDate]
+//            );
+//        }
+//
+//        // Check if end_date is greater than start_date
+//        if ($endDate && $endDate->greaterThan($startDate)) {
+//            // Add 12 hours to the end_date and update the record
+//            $movement->update([
+//                'end_date' => $endDate->addHours(12),
+//            ]);
+//        }
+//    }
+//
+//
+//    /*
+//     *
+//     * foreach ($data as $json){
+//        $user = User::where('card_number',$json['card_id'])->latest()->first();
+//        $startDate = Carbon::parse($json['start_date'])->tz('Asia/Tbilisi');
+//        $movement = \App\Models\Movement::whereDate('start_date',$startDate->format('Y-m-d'))->where('user_id',$user->id)->first();
+//        $endDate = $movement->end_date ?? null;
+//        if ($json['end_date']){
+//            $endDate = Carbon::parse($json['end_date'])->tz('Asia/Tbilisi');
+//        }
+//        // if(!$movement){
+//            \App\Models\Movement::where('start_date',$startDate)->updateOrCreate([
+//                'user_id' => $user->id,
+//                'card_number' => $json['card_id'],
+//                'start_date' => $startDate,
+//            ],['end_date' => $endDate]);
+//        // }
+//    }
+//     */
+//    return jsonResponse($data,200,['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],JSON_UNESCAPED_UNICODE);
+//});

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\UserMovementsExport;
+use App\Imports\UserMovementImport;
 use App\Models\Company;
 use App\Models\Movement;
 use App\Models\User;
 use App\Models\UserCompany;
+use App\Models\UserConfirmedMovement;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -50,7 +53,7 @@ class ReportController extends Controller
             })
             ->addColumn('action', function ($data) {
                 $html = '';
-                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="' . route('reports.movements.edit', $data->id) . '"><i class="fa fa-edit"></i></a>';
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light movement-edit" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="რედაქტირება" href="javascript:void(0)"><i class="fa fa-edit"></i></a>';
                 return $html;
             })
             ->rawColumns(['formatted_start_date', 'formatted_end_date', 'action'])
@@ -63,6 +66,11 @@ class ReportController extends Controller
         $startDate = $request->start_date;
         $endDate = $request->end_date;
         return Excel::download(new \App\Exports\UserMovementsExport($startDate,$endDate), 'movements - ' . date('d.m.Y') . '.xlsx');
+    }
+
+    public function movementsImportExcel(Request $request)
+    {
+        Excel::import(new UserMovementImport(), $request->file('excel_file'));
     }
 
     public function movementCreate(): View
@@ -84,6 +92,12 @@ class ReportController extends Controller
     {
         $movement = Movement::findOrFail($id);
         return view('pages.reports.movement_edit',compact('movement'));
+    }
+
+    public function movementEditRender(Request $request): JsonResponse
+    {
+        $movement = Movement::findOrFail($request->id);
+        return jsonResponse(['status' => 0, 'html' => view('general.reports.movement_edit',compact('movement'))->render()]);
     }
 
     public function movementUpdate(Request $request,$id): RedirectResponse
@@ -131,32 +145,97 @@ class ReportController extends Controller
         return view('pages.reports.hr_table', compact('companies','type'));
     }
 
-    public function hrTableAjax(Request $request): JsonResponse
+    public function confirmationMovement(): View
     {
-        if (!$request->company_id){
-            return \jsonResponse(['status' => 2,'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
+        $companies = Company::all();
+        return view('pages.reports.confirmation_movements');
+    }
+
+    public function confirmationMovementsAjax(Request $request): JsonResponse
+    {
+        return Datatables()->of(UserConfirmedMovement::where('company_id', 1)->get())
+            ->addIndexColumn()
+            ->addColumn('action', function ($data) {
+                $html = '';
+                $html .= ' <a class="btn btn-soft-primary waves-effect waves-light show-detail" data-id="'.$data->id.'" data-bs-toggle="tooltip" data-bs-placement="top" title="ნახვა"  href="javascript:void(0)"><i class="fa fa-eye"></i></a>';
+
+                return $html;
+            })
+            ->rawColumns(['formatted_start_date', 'formatted_end_date', 'action'])
+            ->make(true);
+    }
+
+    public function confirmationMovementsRender(Request $request)
+    {
+        $userConfirmedMovement = UserConfirmedMovement::findOrFail($request->id);
+        $date = Carbon::parse($userConfirmedMovement->date);
+        $month_days = cal_days_in_month(CAL_GREGORIAN, $date->month, $date->year);
+
+        // Get users and their movements
+        $users = User::whereIn('id', $userConfirmedMovement->movements()->pluck('user_id')->all())
+            ->with(['movements' => function ($query) use ($date) {
+                $query->whereYear('start_date', $date->year)
+                    ->whereMonth('start_date', $date->month);
+            }])
+            ->get(['id','name_ka','surname_ka']);
+
+        return jsonResponse(['html' => view('general.reports.confirmation_movements', compact('userConfirmedMovement','month_days','date','users'))->render(), 'status' => 0]);
+    }
+
+    public function confirmationMovementUpdateData(Request $request): JsonResponse
+    {
+        foreach ($request->user_id as $index => $userId) {
+            if (
+                isset($request->date[$index]) &&
+                isset($request->worked_hours[$index]) &&
+                isset($request->at_night_hours[$index])
+            ) {
+                Movement::where('user_id',$userId)->whereDate('start_date',$request->date[$index])
+                    ->update(['worked_hours' => $request->worked_hours[$index],'at_night_hours' => $request->at_night_hours[$index]]);
+            }
         }
+
+
+        return response()->json(['success' => true]);
+
+    }
+
+    public function hrTableAjax(Request $request)
+    {
+        if (!$request->company_id) {
+            return jsonResponse(['status' => 2, 'error' => 'გთხოვთ აირჩიოთ კომპანია!']);
+        }
+
         $year = date('Y');
         $month = date('m');
-        if($request->selected_date){
-            $year = explode('.',$request->selected_date)[1];
-            $month = explode('.',$request->selected_date)[0];
+        if ($request->selected_date) {
+            [$month, $year] = explode('.', $request->selected_date);
             $month = str_pad($month, 2, '0', STR_PAD_LEFT);
         }
         $month_days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        if ($request->type == 1){
-            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
-                ?->map?->getWorkedHoursByDay($year, $month);
-        }else{
-            $users = UserCompany::where('company_id', $request->company_id)->where('status',1)->whereNotNull('working_schedule_id')->with('working_schedule')->get()
-                ?->map?->getWorkedHoursByDaySchedule($year, $month);
-        }
+
+        $usersQuery = UserCompany::where('company_id', $request->company_id)
+            ->where('status', 1)
+            ->whereNotNull('working_schedule_id')
+            ->with(['working_schedule', 'user.movements']);
+
+        $users = $request->type == 1
+            ? $usersQuery->get()->map->getWorkedHoursByDay($year, $month)
+            : $usersQuery->get()->map->getWorkedHoursByDaySchedule($year, $month);
+//
+//        if ($request->type != 1) {
+//            return $users;
+//        }
 
         $company = Company::findOrFail($request->company_id);
-        $date = Carbon::today()->format('d.m.Y');
-        $startDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-01")->format('Y-m-d');
-        $endDate = Carbon::createFromFormat("Y-m-d", "{$year}-{$month}-".$month_days)->format('Y-m-d');
-        return jsonResponse(['html' => view('general.reports.hr_table', compact('month_days','users','company','date','startDate','endDate'))->render(), 'status' => 0]);
+        $date = now()->format('d.m.Y');
+        $startDate = "{$year}-{$month}-01";
+        $endDate = "{$year}-{$month}-{$month_days}";
+
+        return jsonResponse([
+            'html' => view('general.reports.hr_table', compact('month_days', 'users', 'company', 'date', 'startDate', 'endDate'))->render(),
+            'status' => 0
+        ]);
     }
 
     public function exportHrTable($id,$selectedDate,$type)

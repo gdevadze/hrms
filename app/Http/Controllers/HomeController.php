@@ -37,7 +37,7 @@ class HomeController extends Controller
         $todayMovement = Movement::where('user_id',currentUser()->id)->whereDate('start_date',Carbon::today())->latest()->first();
 
         $todayMovements = Movement::whereDate('start_date',Carbon::today())->get()->sortBy(function ($q){
-            return $q->user->company_id;
+            return $q->user?->company_id;
         });
 
         $userVacation = currentUser()->user_vacation_quantities()->sum('quantity');

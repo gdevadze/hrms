@@ -22,6 +22,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkingScheduleController;
 use App\Models\Company;
 use App\Models\User;
+use App\Models\UserVacationQuantity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -41,37 +42,41 @@ use Rats\Zkteco\Lib\ZKTeco;
 |
 */
 
-Route::get('/zktec', function (\App\Services\ZKTService $ZKTService){
-    $loggedIn = $ZKTService->login('your_username', 'your_password');
+Route::get('/zktec', function (){
+    $users = User::whereIn('personal_num',['61009030824',
+'35001062506',
+'61001075689',
+'61001025509',
+'61010019372',
+'35001038605',
+'61001041807',
+'61001051365',
+'61001086983',
+'61008018895',
+'61008013239',
+'02001025637',
+'61001056461',
+'61002015953',
+'61006020092',
+'61006034941',
+'61002016140',
+'61008005924',
+'61008013463',
+'61001048310',
+'61008013025',
+'61005003821',
+'61008007005',
+'61008014892',
+'5991000168',
+'A18699081',
+'FP5374549',
+'A28682428',
+'61191003677',
+'C4YO83MLF',
+])->get();
+    return \App\Models\Movement::whereYear('start_date',2025)->whereMonth('start_date',01)->whereNotIn('user_id',$users->pluck('id')->all())->get();
 
-    if ($loggedIn) {
-        // Fetch attendance data after successful login
-        $attendanceData = $ZKTService->getAttendanceData('2024-08-01', '2024-08-31');
-        return $attendanceData;
-        return view('attendance.index', compact('attendanceData'));
-    } else {
-        return response()->json(['error' => 'Login failed'], 401);
-    }
-//    $user = User::findOrFail(1);
-//    $weekDays = $user->working_schedule?->week_days;
-//    $monthDaysCount = cal_days_in_month(CAL_GREGORIAN, 03, 2024);
-//    for ($i = 1; $i <= $monthDaysCount; $i++) {
-//        $date = Carbon::createFromFormat("Y-m-d", "2024-03-{$i}");
-//        $weekDay = strtoupper(Carbon::parse($date)->format('l'));
-//        if (in_array($weekDay, array_keys($weekDays))){
-//            $movement = \App\Models\Movement::where('user_id',$user->id)->whereDate('start_date',Carbon::parse($date)->format('Y-m-d'))->first();
-//            if(!$movement){
-//                \App\Models\Movement::create([
-//                    'user_id' => $user->id,
-//                    'working_schedule_id' => $user->working_schedule_id,
-//                    'card_number' => $user->card_number,
-//                    'start_date' => Carbon::parse($date)->format('Y-m-d 10:00:00'),
-//                    'end_date' => Carbon::parse($date)->format('Y-m-d 19:00:00')
-//                ]);
-//            }
-////            echo $date.'<br>';
-//        }
-//    }
+    return $users;
 });
 
 Route::get('/testunia', function (App\Services\MessageService $messageService){
@@ -138,7 +143,34 @@ Route::get('/', function () {
 })->name('index');
 
 Route::get('/test_img', function (){
-    return view('pages.canvas');
+    $records = \App\Models\Movement::whereRaw('DATEDIFF(end_date, start_date) > 1')
+        ->whereMonth('start_date', 1)
+//        ->whereMonth('end_date', 1)
+        ->get();
+//    return $records;
+    foreach ($records as  $record){
+        \App\Models\Movement::create([
+            'user_id' => $record->user_id,
+            'working_schedule_id' => $record->working_schedule_id,
+            'dynamic_working_schedule_id' => $record->dynamic_working_schedule_id,
+            'card_number' => $record->card_number,
+            'start_date' => $record->end_date,
+        ]);
+        $record->update(['end_date' => null]);
+    }
+    return  $records;
+//    $userCompanies = \App\Models\UserCompany::all()->unique('user_id');
+////    return $userCompanies;
+//    foreach ($userCompanies as $userCompany){
+//        UserVacationQuantity::updateOrCreate([
+//            'user_id' => $userCompany->user_id,
+//            'year' => 2025,
+//        ],[
+//            'quantity' => 24,
+//            'current_quantity' => 0
+//        ]);
+//    }
+////    return view('pages.canvas');
 });
 
 Route::get('/export', function (){
@@ -265,7 +297,9 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/create',[ReportController::class,'movementCreate'])->name('create');
                 Route::post('/store',[ReportController::class,'movementStore'])->name('store');
                 Route::get('/edit/{id}',[ReportController::class,'movementEdit'])->name('edit');
+                Route::post('/edit_render',[ReportController::class,'movementEditRender'])->name('edit.render');
                 Route::get('/export_excel/{start_date}/{end_date}',[ReportController::class,'movementsExportExcel'])->name('export.excel');
+                Route::post('/import_movements_excel',[ReportController::class,'movementsImportExcel'])->name('import.movements.excel');
                 Route::post('/update/{id}',[ReportController::class,'movementUpdate'])->name('update');
             });
 
@@ -277,6 +311,14 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => 'hr_table','as' => 'hr_table.'], function (){
                 Route::get('/{type}',[ReportController::class,'hrTable'])->name('index');
                 Route::post('/ajax',[ReportController::class,'hrTableAjax'])->name('ajax');
+                Route::get('/export_excel/{id}/{selectedDate}/{type}',[ReportController::class,'exportHrTable'])->name('export.excel');
+            });
+
+            Route::group(['prefix' => 'confirmation_movements','as' => 'confirmation_movements.'], function (){
+                Route::get('/',[ReportController::class,'confirmationMovement'])->name('index');
+                Route::post('/ajax',[ReportController::class,'confirmationMovementsAjax'])->name('ajax');
+                Route::post('/render',[ReportController::class,'confirmationMovementsRender'])->name('render');
+                Route::post('/update_data',[ReportController::class,'confirmationMovementUpdateData'])->name('update.data');
                 Route::get('/export_excel/{id}/{selectedDate}/{type}',[ReportController::class,'exportHrTable'])->name('export.excel');
             });
 

@@ -25,7 +25,7 @@
     </tr>
     <tr>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 height="18" align="center" valign=bottom><b><font face="Sylfaen" color="#000000">&#4321;&#4322;&#4320;&#4323;&#4325;&#4322;&#4323;&#4320;&#4323;&#4314;&#4312; &#4308;&#4320;&#4311;&#4308;&#4323;&#4314;&#4312;</font></b></td>
-        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan={{ $month_days + 7 }} align="left" valign=middle><b><font face="Sylfaen" color="#000000">{{ $users->unique('data.position_name')->implode('data.position_name',', ') }}</font></b></td>
+        <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan={{ $month_days + 7 }} align="left" valign=middle><b><font face="Sylfaen" color="#000000"></font></b></td>
     </tr>
     <tr>
         <td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 height="21" align="center" valign=middle><b><font face="Sylfaen" color="#000000">&#4328;&#4308;&#4307;&#4306;&#4308;&#4316;&#4312; &#4311;&#4304;&#4320;&#4312;&#4326;&#4312;</font></b></td>

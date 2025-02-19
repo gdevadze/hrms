@@ -154,6 +154,10 @@
 {{--                                   data-key="t-analytics">დაგვიანების კომენტარების რეპორტი</a>--}}
 {{--                            </li>--}}
                             <li class="nav-item">
+                                <a href="{{ route('reports.confirmation_movements.index') }}" class="nav-link"
+                                   data-key="t-analytics">თანამშრომლის ნამუშევარი საათის დადასტურება</a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('reports.rs.index') }}" class="nav-link"
                                    data-key="t-analytics">RS-ის რეპორტი</a>
                             </li>

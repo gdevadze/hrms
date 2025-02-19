@@ -115,30 +115,9 @@
     <script src="{{ asset('assets/js/pages/form-wizard.init.js') }}"></script>
     <script src="{{ asset('assets/js/geokbd.js') }}"></script>
     <script src="{{ asset('assets/js/pages/form-pickers.init.js') }}"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/ka.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/ka.js"></script>
+
     <script>
-        $(document).ready(function(){
-            $('#tel').inputmask({"mask": "599 99 99 99"});
-            $('#name_ka').geokbd();
-            $('#surname_ka').geokbd();
-            flatpickr("#start_date", {
-                "locale": "ka",
-                enableTime: true,
-                altInput: true,
-                altFormat: "d.m.Y H:i",
-                dateFormat: "Y-m-d H:i"
-            });
-            flatpickr("#end_date", {
-                "locale": "ka",
-                enableTime: true,
-                altInput: true,
-                altFormat: "d.m.Y H:i",
-                dateFormat: "Y-m-d H:i"
-            });
-        });
+
 
         $(document.body).on('click', '.edit-company', function () {
             $('#modal_form_detail').modal('show'); // show bootstrap modal when complete loaded

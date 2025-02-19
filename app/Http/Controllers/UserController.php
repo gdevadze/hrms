@@ -43,20 +43,21 @@ class UserController extends Controller
 //        $this->middleware('permission:user-delete', ['only' => ['destroy']]);
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $positions = Position::all();
         $departments = Department::all();
         $roles = Role::where('name','!=','System Administrator')->get();
-        return view('pages.users.index',compact('positions','departments','roles'));
+        $workingSchedules = WorkingSchedule::all();
+        return view('pages.users.index',compact('positions','departments','roles','workingSchedules'));
     }
 
-    public function changePassword()
+    public function changePassword(): View
     {
         return view('pages.change-password');
     }
 
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): RedirectResponse
     {
         $request->validate([
             'current_password' => 'required',
@@ -202,6 +203,11 @@ class UserController extends Controller
         if($request->position_id){
             $users = $users->whereHas('user_companies', function ($q) use($request){
                 return $q->where('position_id',$request->position_id);
+            });
+        }
+        if($request->working_schedule_id){
+            $users = $users->whereHas('user_companies', function ($q) use($request){
+                return $q->where('working_schedule_id',$request->working_schedule_id);
             });
         }
         return Datatables()->of($users)
